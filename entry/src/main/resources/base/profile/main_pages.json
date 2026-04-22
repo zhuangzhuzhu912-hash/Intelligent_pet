@@ -1,0 +1,9 @@
+{
+  "src": [
+    "pages/Index",
+    "pages/LoginPage",
+    "pages/RegisterPage",
+    "pages/ForgotPasswordPage",
+    "pages/PetManagePage"
+  ]
+}

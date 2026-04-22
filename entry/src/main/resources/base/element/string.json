@@ -1,0 +1,36 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "宠联中枢主模块"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "宠联中枢应用入口"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "宠联中枢"
+    },
+    {
+      "name": "app_description",
+      "value": "跨品牌智能养宠平台，整合16款智能硬件统一控制"
+    },
+    {
+      "name": "permission_location_reason",
+      "value": "用于实时追踪宠物位置和运动轨迹"
+    },
+    {
+      "name": "permission_microphone_reason",
+      "value": "用于与宠物进行语音对讲"
+    },
+    {
+      "name": "permission_internet_reason",
+      "value": "用于连接云端服务和远程控制设备"
+    },
+    {
+      "name": "permission_distributed_reason",
+      "value": "用于鸿蒙分布式设备协同和软总线组网"
+    }
+  ]
+}
