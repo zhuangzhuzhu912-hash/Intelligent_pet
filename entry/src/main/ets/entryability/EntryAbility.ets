@@ -38,8 +38,9 @@ export default class EntryAbility extends UIAbility {
     });
 
     // 先初始化数据库，完成后再加载页面内容
-    // 这样确保页面中的任何数据库操作都不会因为 DB 未就绪而失败
-    RdbHelper.initDb(this.context).then(() => {
+    // 使用 applicationContext 确保 context 在整个应用生命周期内有效
+    const appContext = this.context.getApplicationContext();
+    RdbHelper.initDb(appContext).then(() => {
       hilog.info(DOMAIN, TAG, 'Database initialized successfully');
 
       // 初始化软总线设备发现（非关键，失败不影响主流程）
@@ -60,6 +61,12 @@ export default class EntryAbility extends UIAbility {
       });
     }).catch((err: Error) => {
       hilog.error(DOMAIN, TAG, 'Failed to init database: %{public}s', JSON.stringify(err));
+      // 数据库初始化失败时，尝试用 applicationContext 重试一次
+      RdbHelper.initDb(appContext).then(() => {
+        hilog.info(DOMAIN, TAG, 'Database initialized on retry');
+      }).catch((retryErr: Error) => {
+        hilog.error(DOMAIN, TAG, 'Database retry also failed: %{public}s', JSON.stringify(retryErr));
+      });
       // 即使数据库初始化失败，也加载页面（页面会显示错误提示）
       windowStage.loadContent('pages/Index', (loadErr) => {
         if (loadErr && loadErr.code) {

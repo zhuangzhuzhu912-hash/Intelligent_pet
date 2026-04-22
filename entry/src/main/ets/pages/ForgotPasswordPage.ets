@@ -85,51 +85,47 @@ struct ForgotPasswordPage {
           .width('100%')
           .margin({ bottom: 8 })
 
-        TextInput({ placeholder: '用户名', text: this.username })
+        TextInput({ placeholder: '用户名', text: $$this.username })
           .type(InputType.Normal)
           .height(48)
           .borderRadius(AppSizes.CARD_RADIUS)
           .backgroundColor('#F3F4F6')
           .padding({ left: 16, right: 16 })
           .fontSize(AppFonts.BODY)
-          .onChange((value: string) => {
-            this.username = value;
+          .onChange(() => {
             this.errorMsg = '';
           })
 
-        TextInput({ placeholder: '注册手机号', text: this.phone })
+        TextInput({ placeholder: '注册手机号', text: $$this.phone })
           .type(InputType.PhoneNumber)
           .height(48)
           .borderRadius(AppSizes.CARD_RADIUS)
           .backgroundColor('#F3F4F6')
           .padding({ left: 16, right: 16 })
           .fontSize(AppFonts.BODY)
-          .onChange((value: string) => {
-            this.phone = value;
+          .onChange(() => {
             this.errorMsg = '';
           })
 
-        TextInput({ placeholder: '新密码（至少6位）', text: this.newPassword })
+        TextInput({ placeholder: '新密码（至少6位）', text: $$this.newPassword })
           .type(InputType.Password)
           .height(48)
           .borderRadius(AppSizes.CARD_RADIUS)
           .backgroundColor('#F3F4F6')
           .padding({ left: 16, right: 16 })
           .fontSize(AppFonts.BODY)
-          .onChange((value: string) => {
-            this.newPassword = value;
+          .onChange(() => {
             this.errorMsg = '';
           })
 
-        TextInput({ placeholder: '确认新密码', text: this.confirmPassword })
+        TextInput({ placeholder: '确认新密码', text: $$this.confirmPassword })
           .type(InputType.Password)
           .height(48)
           .borderRadius(AppSizes.CARD_RADIUS)
           .backgroundColor('#F3F4F6')
           .padding({ left: 16, right: 16 })
           .fontSize(AppFonts.BODY)
-          .onChange((value: string) => {
-            this.confirmPassword = value;
+          .onChange(() => {
             this.errorMsg = '';
           })
 

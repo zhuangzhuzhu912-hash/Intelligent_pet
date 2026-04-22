@@ -80,9 +80,13 @@ class RdbHelperClass {
   private isInitialized: boolean = false;
   // 初始化 Promise，用于让其他操作等待数据库就绪
   private initPromise: Promise<void> | null = null;
+  // 保存 context 引用，用于在 getStoreAsync 中自动重试初始化
+  private appContext: Context | null = null;
 
   // 初始化数据库
   async initDb(context: Context): Promise<void> {
+    // 保存 context 以便后续重试
+    this.appContext = context;
     if (this.isInitialized && this.rdbStore) {
       return;
     }
@@ -142,6 +146,14 @@ class RdbHelperClass {
     if (this.initPromise) {
       await this.initPromise;
       if (this.rdbStore) {
+        return this.rdbStore;
+      }
+    }
+    // 如果有保存的 context，尝试自动重新初始化
+    if (this.appContext) {
+      hilog.warn(DOMAIN, TAG, 'Database not initialized, attempting auto re-init...');
+      await this.initDb(this.appContext);
+      if (this.isInitialized && this.rdbStore) {
         return this.rdbStore;
       }
     }

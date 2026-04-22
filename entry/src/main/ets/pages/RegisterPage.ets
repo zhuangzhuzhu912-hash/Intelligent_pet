@@ -91,15 +91,14 @@ struct RegisterPage {
               .fontSize(AppFonts.BODY)
               .fontColor(AppColors.TEXT_PRIMARY)
               .fontWeight(FontWeight.Medium)
-            TextInput({ placeholder: '3个字符以上', text: this.username })
+            TextInput({ placeholder: '3个字符以上', text: $$this.username })
               .type(InputType.Normal)
               .height(48)
               .borderRadius(AppSizes.CARD_RADIUS)
               .backgroundColor('#F3F4F6')
               .padding({ left: 16, right: 16 })
               .fontSize(AppFonts.BODY)
-              .onChange((value: string) => {
-                this.username = value;
+              .onChange(() => {
                 this.errorMsg = '';
               })
           }
@@ -112,16 +111,13 @@ struct RegisterPage {
               .fontSize(AppFonts.BODY)
               .fontColor(AppColors.TEXT_PRIMARY)
               .fontWeight(FontWeight.Medium)
-            TextInput({ placeholder: '给自己取个名字吧', text: this.nickname })
+            TextInput({ placeholder: '给自己取个名字吧', text: $$this.nickname })
               .type(InputType.Normal)
               .height(48)
               .borderRadius(AppSizes.CARD_RADIUS)
               .backgroundColor('#F3F4F6')
               .padding({ left: 16, right: 16 })
               .fontSize(AppFonts.BODY)
-              .onChange((value: string) => {
-                this.nickname = value;
-              })
           }
           .width('100%')
           .alignItems(HorizontalAlign.Start)
@@ -132,16 +128,13 @@ struct RegisterPage {
               .fontSize(AppFonts.BODY)
               .fontColor(AppColors.TEXT_PRIMARY)
               .fontWeight(FontWeight.Medium)
-            TextInput({ placeholder: '用于密码找回', text: this.phone })
+            TextInput({ placeholder: '用于密码找回', text: $$this.phone })
               .type(InputType.PhoneNumber)
               .height(48)
               .borderRadius(AppSizes.CARD_RADIUS)
               .backgroundColor('#F3F4F6')
               .padding({ left: 16, right: 16 })
               .fontSize(AppFonts.BODY)
-              .onChange((value: string) => {
-                this.phone = value;
-              })
           }
           .width('100%')
           .alignItems(HorizontalAlign.Start)
@@ -152,15 +145,14 @@ struct RegisterPage {
               .fontSize(AppFonts.BODY)
               .fontColor(AppColors.TEXT_PRIMARY)
               .fontWeight(FontWeight.Medium)
-            TextInput({ placeholder: '至少6位', text: this.password })
+            TextInput({ placeholder: '至少6位', text: $$this.password })
               .type(InputType.Password)
               .height(48)
               .borderRadius(AppSizes.CARD_RADIUS)
               .backgroundColor('#F3F4F6')
               .padding({ left: 16, right: 16 })
               .fontSize(AppFonts.BODY)
-              .onChange((value: string) => {
-                this.password = value;
+              .onChange(() => {
                 this.errorMsg = '';
               })
           }
@@ -173,15 +165,14 @@ struct RegisterPage {
               .fontSize(AppFonts.BODY)
               .fontColor(AppColors.TEXT_PRIMARY)
               .fontWeight(FontWeight.Medium)
-            TextInput({ placeholder: '再次输入密码', text: this.confirmPassword })
+            TextInput({ placeholder: '再次输入密码', text: $$this.confirmPassword })
               .type(InputType.Password)
               .height(48)
               .borderRadius(AppSizes.CARD_RADIUS)
               .backgroundColor('#F3F4F6')
               .padding({ left: 16, right: 16 })
               .fontSize(AppFonts.BODY)
-              .onChange((value: string) => {
-                this.confirmPassword = value;
+              .onChange(() => {
                 this.errorMsg = '';
               })
           }

@@ -59,28 +59,26 @@ struct LoginPage {
       // 表单区域
       Column({ space: 16 }) {
         // 用户名
-        TextInput({ placeholder: '请输入用户名', text: this.username })
+        TextInput({ placeholder: '请输入用户名', text: $$this.username })
           .type(InputType.Normal)
           .height(48)
           .borderRadius(AppSizes.CARD_RADIUS)
           .backgroundColor('#F3F4F6')
           .padding({ left: 16, right: 16 })
           .fontSize(AppFonts.BODY)
-          .onChange((value: string) => {
-            this.username = value;
+          .onChange(() => {
             this.errorMsg = '';
           })
 
         // 密码
-        TextInput({ placeholder: '请输入密码', text: this.password })
+        TextInput({ placeholder: '请输入密码', text: $$this.password })
           .type(InputType.Password)
           .height(48)
           .borderRadius(AppSizes.CARD_RADIUS)
           .backgroundColor('#F3F4F6')
           .padding({ left: 16, right: 16 })
           .fontSize(AppFonts.BODY)
-          .onChange((value: string) => {
-            this.password = value;
+          .onChange(() => {
             this.errorMsg = '';
           })
 

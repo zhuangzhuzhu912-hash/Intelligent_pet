@@ -7,6 +7,9 @@
         "INCLUDE_IN_BUILD": true,
         "IS_COMMAND_LINE_ENTRY_MODULE": true,
         "MODULE_TYPE": "entry",
+        "INCREMENTAL_TASKS": {
+          "COMPILE_ARKTS": true
+        },
         "IS_INCREMENTAL_MODULE": true
       }
     ],
@@ -22,19 +25,32 @@
     "IS_HVIGORFILE_TYPE_CHECK": false,
     "TASK_TIME": {
       "923fe53966c6cd9343e11af776cd4b05be315ea4b200b02e4d5dfb0f929b73bf": {
-        "PreBuild": 43673700,
-        "CreateModuleInfo": 1500800,
-        "PreCheckSyscap": 960500,
-        "ProcessStartupConfig": 5272500,
-        "PreviewProcessResource": 4112600,
-        "PreviewCompileResource": 1148574600,
-        "PreviewHookCompileResource": 701400,
-        "CopyPreviewProfile": 14903400,
-        "ReplacePreviewerPage": 881500,
-        "buildPreviewerResource": 647500,
-        "PreviewUpdateAssets": 7289200,
-        "PreviewArkTS": 18705969300,
-        "PreviewBuild": 801400
+        "PreBuild": 86117500,
+        "CreateModuleInfo": 3247800,
+        "ConfigureCmake": 620100,
+        "MergeProfile": 11755600,
+        "CreateBuildProfile": 5342400,
+        "PreCheckSyscap": 846300,
+        "GeneratePkgContextInfo": 8090600,
+        "ProcessIntegratedHsp": 1572300,
+        "BuildNativeWithCmake": 571500,
+        "SyscapTransform": 12857500,
+        "ProcessProfile": 367014200,
+        "ProcessRouterMap": 6487600,
+        "ProcessShareConfig": 5579400,
+        "ProcessStartupConfig": 3751400,
+        "BuildNativeWithNinja": 1734000,
+        "GenerateLoaderJson": 23800400,
+        "CompileResource": 993883000,
+        "BuildJS": 5752400,
+        "CompileArkTS": 21949077600,
+        "GeneratePkgModuleJson": 9758000,
+        "ProcessCompiledResources": 4079400,
+        "PackageHap": 968014300,
+        "PackingCheck": 18704100,
+        "SignHap": 4693000,
+        "CollectDebugSymbol": 2042000,
+        "assembleHap": 664500
       }
     },
     "APIS": [
@@ -45,7 +61,7 @@
       "ENABLE_CPP_FUNCTION_LEVEL_INCREMENTAL": false
     },
     "CONFIG_PROPERTIES": {},
-    "TOTAL_TIME": 20578750100,
-    "BUILD_ID": "202604221143096070"
+    "TOTAL_TIME": 25284338900,
+    "BUILD_ID": "202604221816302370"
   }
 }

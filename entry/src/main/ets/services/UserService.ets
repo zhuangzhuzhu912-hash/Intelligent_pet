@@ -48,6 +48,7 @@ class UserServiceClass {
 
     hilog.info(DOMAIN, TAG, `Inserting user with values: username=${username}, nickname=${nickname || username}`);
 
+    // insert 返回的 rowId 就是 AUTOINCREMENT 主键值，直接使用即可
     const rowId = await RdbHelper.insert('user_info', values);
     hilog.info(DOMAIN, TAG, `Insert returned rowId=${rowId}`);
 
@@ -55,14 +56,8 @@ class UserServiceClass {
       throw new Error('注册失败：数据库插入失败');
     }
 
-    // 通过用户名重新查询获取自增 ID
-    const newUser = await this.findByUsername(username);
-    if (!newUser) {
-      throw new Error('注册失败：用户创建后无法查询到');
-    }
-
-    hilog.info(DOMAIN, TAG, `User registered successfully: ${username}, id=${newUser.id}`);
-    return newUser.id;
+    hilog.info(DOMAIN, TAG, `User registered successfully: ${username}, id=${rowId}`);
+    return rowId;
   }
 
   // 登录
