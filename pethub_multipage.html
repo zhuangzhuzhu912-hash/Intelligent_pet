@@ -1,0 +1,474 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>PetHub - 分布式智能养宠平台</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 自定义配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#FF9F43',
+                        'primary-light': '#FFB067',
+                        'secondary': '#00B4D8',
+                        'bg-light': '#F8F9FA',
+                        'card-bg': 'rgba(255, 255, 255, 0.92)',
+                        'success': '#52C41A',
+                        'warning': '#FAAD14',
+                    },
+                    fontFamily: {
+                        'sans': ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Text"', 'sans-serif'],
+                    },
+                    borderRadius: {
+                        'card': '20px',
+                        'btn': '30px',
+                    },
+                    boxShadow: {
+                        'card': '0 8px 24px rgba(0, 0, 0, 0.04), 0 2px 6px rgba(0, 0, 0, 0.02)',
+                        'btn': '0 4px 12px rgba(255, 159, 67, 0.25)',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- 自定义样式 -->
+    <style>
+        body {
+            background: #1a1a1a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 16px;
+        }
+        .iphone-frame {
+            width: 393px;
+            max-width: 100%;
+            height: 852px;
+            background: #F8F9FA;
+            border-radius: 48px;
+            overflow: hidden;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3), 0 0 0 8px #3a3a3a;
+            position: relative;
+        }
+        .dynamic-island {
+            position: absolute;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 110px;
+            height: 34px;
+            background: #111;
+            border-radius: 20px;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 16px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .app-content {
+            height: 100%;
+            overflow-y: auto;
+            padding: 56px 16px 16px 16px;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        .app-content::-webkit-scrollbar {
+            display: none;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 0.5px solid rgba(255, 255, 255, 0.5);
+        }
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+        .avatar-wrapper {
+            position: relative;
+        }
+        .online-dot {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 12px;
+            height: 12px;
+            background: #52C41A;
+            border: 2px solid white;
+            border-radius: 50%;
+        }
+        .feed-btn-glow {
+            animation: pulse-glow 2s infinite;
+        }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 4px 12px rgba(255, 159, 67, 0.25); }
+            50% { box-shadow: 0 6px 20px rgba(255, 159, 67, 0.4); }
+        }
+        /* 声波动画 */
+        .sonar-wave {
+            animation: sonar 1.5s ease-out infinite;
+        }
+        @keyframes sonar {
+            0% { transform: scale(1); opacity: 0.6; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+    </style>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script>
+        function switchTab(tabIndex) {
+            const pages = ['home', 'devices', 'health', 'profile'];
+            const tabs = document.querySelectorAll('.tab-item');
+            const content = document.querySelector('.app-content');
+            
+            tabs.forEach((tab, index) => {
+                if (index === tabIndex) {
+                    tab.classList.remove('text-gray-400');
+                    tab.classList.add('text-primary');
+                    tab.querySelector('span').classList.add('font-medium');
+                } else {
+                    tab.classList.remove('text-primary');
+                    tab.classList.add('text-gray-400');
+                    tab.querySelector('span').classList.remove('font-medium');
+                }
+            });
+            
+            if (tabIndex === 0) {
+                content.innerHTML = homePageHTML;
+            } else if (tabIndex === 1) {
+                content.innerHTML = devicesPageHTML;
+            } else if (tabIndex === 2) {
+                content.innerHTML = healthPageHTML;
+            } else if (tabIndex === 3) {
+                content.innerHTML = profilePageHTML;
+            }
+            
+            content.scrollTop = 0;
+        }
+    </script>
+</head>
+<body>
+    <div class="iphone-frame">
+        <!-- 动态岛状态栏 -->
+        <div class="dynamic-island">
+            <span class="time">9:41</span>
+            <div class="status-icons">
+                <i class="fas fa-signal"></i>
+                <i class="fas fa-wifi"></i>
+                <i class="fas fa-battery-full"></i>
+            </div>
+        </div>
+        
+        <!-- 主内容区 -->
+        <div class="app-content">
+            <!-- 导航栏 -->
+            <div class="flex justify-between items-center mb-4 px-1">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-bolt text-primary text-2xl"></i>
+                    <h1 class="text-xl font-bold text-gray-800">宠联中枢</h1>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-full text-sm text-gray-600 shadow-sm">
+                        <i class="fas fa-microchip text-primary mr-1"></i>16台设备
+                    </span>
+                    <button class="w-10 h-10 rounded-full bg-white/80 backdrop-blur-sm shadow-sm text-gray-600">
+                        <i class="fas fa-bell"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 宠物信息卡片 -->
+            <div class="glass-card rounded-card p-4 mb-4 shadow-card">
+                <div class="flex items-center gap-3">
+                    <div class="avatar-wrapper">
+                        <img src="https://images.unsplash.com/photo-1612940960267-4549a58fb257?w=150&h=150&fit=crop" 
+                             class="w-14 h-14 rounded-full object-cover border-2 border-white shadow-sm">
+                        <span class="online-dot"></span>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h2 class="text-lg font-bold text-gray-800">旺仔</h2>
+                            <span class="bg-primary/10 text-primary text-xs px-2 py-0.5 rounded-full">柯基·3岁</span>
+                        </div>
+                        <p class="text-gray-500 text-sm"><i class="fas fa-weight-scale mr-1"></i>12.5kg · 公 · 疫苗齐全</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 智能项圈模块 -->
+            <div class="glass-card rounded-card p-4 mb-4 shadow-card">
+                <div class="flex justify-between items-center mb-3">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-dog text-secondary text-lg"></i>
+                        <h3 class="font-semibold text-gray-800">智能项圈</h3>
+                        <span class="text-xs bg-secondary/10 text-secondary px-2 py-0.5 rounded-full">在线</span>
+                    </div>
+                    <span class="text-xs text-gray-400"><i class="far fa-clock mr-1"></i>更新于30秒前</span>
+                </div>
+                
+                <!-- 地图卡片 -->
+                <div class="relative rounded-2xl overflow-hidden h-36 mb-3 border border-gray-200/50">
+                    <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?w=800&h=300&fit=crop" 
+                         class="w-full h-full object-cover">
+                    <!-- 地图标记层 -->
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+                    <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between">
+                        <div class="flex items-center gap-2 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full">
+                            <img src="https://images.unsplash.com/photo-1612940960267-4549a58fb257?w=30&h=30&fit=crop" 
+                                 class="w-6 h-6 rounded-full border border-white">
+                            <span class="text-sm font-medium text-gray-800">旺仔</span>
+                        </div>
+                        <button class="bg-primary text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg">
+                            <i class="fas fa-location-arrow"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 位置信息 -->
+                <div class="mb-3">
+                    <p class="text-gray-800 font-medium"><i class="fas fa-map-pin text-secondary mr-1"></i>广东省广州市天河区·天河北路890号</p>
+                    <p class="text-gray-500 text-sm mt-1">距您 1.2km · 在小区内活动</p>
+                </div>
+                
+                <!-- 四项操作按钮 -->
+                <div class="grid grid-cols-4 gap-2 mb-3">
+                    <button class="bg-primary/10 rounded-xl py-2 flex flex-col items-center">
+                        <i class="fas fa-search text-primary text-lg"></i>
+                        <span class="text-xs text-gray-700 mt-1">一键寻宠</span>
+                    </button>
+                    <button class="bg-secondary/10 rounded-xl py-2 flex flex-col items-center relative">
+                        <i class="fas fa-microphone text-secondary text-lg"></i>
+                        <span class="text-xs text-gray-700 mt-1">语音对讲</span>
+                        <!-- 声波动画 -->
+                        <span class="absolute inset-0 rounded-xl border-2 border-secondary/30 sonar-wave"></span>
+                    </button>
+                    <button class="bg-gray-100 rounded-xl py-2 flex flex-col items-center">
+                        <i class="fas fa-route text-gray-600 text-lg"></i>
+                        <span class="text-xs text-gray-700 mt-1">历史轨迹</span>
+                    </button>
+                    <button class="bg-gray-100 rounded-xl py-2 flex flex-col items-center">
+                        <i class="fas fa-shield-alt text-gray-600 text-lg"></i>
+                        <span class="text-xs text-gray-700 mt-1">电子围栏</span>
+                    </button>
+                </div>
+                
+                <!-- 今日运动数据 -->
+                <div class="border-t border-gray-100 pt-3">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm font-medium text-gray-700"><i class="fas fa-person-running text-secondary mr-1"></i>今日运动</span>
+                        <span class="text-xs text-gray-400">目标 8000步</span>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <!-- 环形进度条 -->
+                        <div class="relative w-20 h-20">
+                            <svg class="progress-ring w-full h-full" viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="38" fill="none" stroke="#E8E8E8" stroke-width="6"></circle>
+                                <circle cx="50" cy="50" r="38" fill="none" stroke="url(#grad)" stroke-width="6" 
+                                        stroke-linecap="round" stroke-dasharray="238.76" stroke-dashoffset="83.57"></circle>
+                                <defs>
+                                    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="#FF9F43"/>
+                                        <stop offset="100%" stop-color="#00B4D8"/>
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                            <div class="absolute inset-0 flex flex-col items-center justify-center">
+                                <span class="text-lg font-bold text-gray-800">65<small class="text-[10px]">%</small></span>
+                            </div>
+                        </div>
+                        <!-- 数据网格 -->
+                        <div class="flex-1 grid grid-cols-3 gap-1">
+                            <div class="bg-white/60 rounded-lg p-1.5 text-center">
+                                <p class="text-base font-bold text-gray-800">5.2k</p>
+                                <p class="text-[10px] text-gray-400">步数</p>
+                            </div>
+                            <div class="bg-white/60 rounded-lg p-1.5 text-center">
+                                <p class="text-base font-bold text-gray-800">3.8</p>
+                                <p class="text-[10px] text-gray-400">公里</p>
+                            </div>
+                            <div class="bg-white/60 rounded-lg p-1.5 text-center">
+                                <p class="text-base font-bold text-gray-800">215</p>
+                                <p class="text-[10px] text-gray-400">千卡</p>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-xs text-success mt-2"><i class="fas fa-arrow-trend-up mr-1"></i>较昨日 +12%</p>
+                </div>
+            </div>
+            
+            <!-- 智能喂食/喂水器模块 -->
+            <div class="glass-card rounded-card p-4 mb-4 shadow-card">
+                <div class="flex justify-between items-center mb-3">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-utensils text-primary text-lg"></i>
+                        <h3 class="font-semibold text-gray-800">智能喂食器</h3>
+                        <span class="text-xs bg-success/10 text-success px-2 py-0.5 rounded-full">在线</span>
+                    </div>
+                    <span class="text-xs text-gray-400"><i class="far fa-clock mr-1"></i>下一餐 18:30</span>
+                </div>
+                
+                <!-- 余粮/水量双环 -->
+                <div class="flex justify-around mb-4">
+                    <div class="text-center">
+                        <div class="relative w-20 h-20 mx-auto">
+                            <svg class="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="38" fill="none" stroke="#E8E8E8" stroke-width="6"></circle>
+                                <circle cx="50" cy="50" r="38" fill="none" stroke="#FF9F43" stroke-width="6" 
+                                        stroke-dasharray="238.76" stroke-dashoffset="95.5"></circle>
+                            </svg>
+                            <div class="absolute inset-0 flex flex-col items-center justify-center">
+                                <span class="text-lg font-bold">68<small class="text-[10px]">g</small></span>
+                                <span class="text-[10px] text-gray-400">余粮</span>
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-1">容量200g</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="relative w-20 h-20 mx-auto">
+                            <svg class="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="38" fill="none" stroke="#E8E8E8" stroke-width="6"></circle>
+                                <circle cx="50" cy="50" r="38" fill="none" stroke="#00B4D8" stroke-width="6" 
+                                        stroke-dasharray="238.76" stroke-dashoffset="47.75"></circle>
+                            </svg>
+                            <div class="absolute inset-0 flex flex-col items-center justify-center">
+                                <span class="text-lg font-bold">320<small class="text-[10px]">ml</small></span>
+                                <span class="text-[10px] text-gray-400">水量</span>
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-1">容量500ml</p>
+                    </div>
+                </div>
+                
+                <!-- 喂食计划卡片 -->
+                <div class="bg-gradient-to-r from-primary/5 to-secondary/5 rounded-xl p-3 mb-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm font-medium"><i class="far fa-calendar-alt mr-1"></i>今日喂食计划</span>
+                        <span class="text-xs text-primary bg-white/80 px-2 py-0.5 rounded-full">运动自适应开启</span>
+                    </div>
+                    <div class="space-y-1.5">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">08:00 早餐</span>
+                            <span class="font-medium">30g <span class="text-success text-xs">已完成</span></span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">12:30 午餐</span>
+                            <span class="font-medium">25g <span class="text-warning text-xs">待执行</span></span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">18:30 晚餐</span>
+                            <span class="font-medium">35g (预估) <span class="text-gray-400 text-xs">将根据运动调整</span></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 操作按钮组 -->
+                <div class="flex gap-3 mb-4">
+                    <button class="flex-1 bg-primary text-white py-3 rounded-btn font-medium flex items-center justify-center gap-2 shadow-btn feed-btn-glow">
+                        <i class="fas fa-plus-circle"></i>立即加餐
+                    </button>
+                    <button class="flex-1 bg-white border border-gray-200 text-gray-700 py-3 rounded-btn font-medium flex items-center justify-center gap-2">
+                        <i class="fas fa-sliders-h"></i>自定义投喂
+                    </button>
+                </div>
+                
+                <!-- 今日投喂记录 -->
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-sm font-medium text-gray-700"><i class="far fa-list-alt mr-1"></i>今日记录</span>
+                        <a href="#" class="text-xs text-primary">全部 <i class="fas fa-chevron-right text-[10px]"></i></a>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between p-2 bg-white/50 rounded-lg">
+                            <div class="flex items-center gap-2">
+                                <i class="far fa-clock text-primary"></i>
+                                <span class="text-sm">08:00 定时</span>
+                            </div>
+                            <span class="font-medium">30g</span>
+                        </div>
+                        <div class="flex items-center justify-between p-2 bg-white/50 rounded-lg">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-bolt text-secondary"></i>
+                                <span class="text-sm">10:15 运动奖励</span>
+                            </div>
+                            <span class="font-medium text-secondary">+10g</span>
+                        </div>
+                        <div class="flex items-center justify-between p-2 bg-white/50 rounded-lg">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-hand-pointer text-gray-500"></i>
+                                <span class="text-sm">14:20 手动加餐</span>
+                            </div>
+                            <span class="font-medium">15g</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 其他设备快捷入口 -->
+            <div class="glass-card rounded-card p-3 mb-3">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-medium text-gray-700"><i class="fas fa-th mr-1"></i>其他设备</span>
+                    <span class="text-xs text-primary">13台在线</span>
+                </div>
+                <div class="flex gap-3 overflow-x-auto pb-1">
+                    <div class="flex flex-col items-center min-w-[60px]">
+                        <div class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center"><i class="fas fa-water text-blue-400 text-xl"></i></div>
+                        <span class="text-xs mt-1">饮水机</span>
+                    </div>
+                    <div class="flex flex-col items-center min-w-[60px]">
+                        <div class="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center"><i class="fas fa-toilet text-green-400 text-xl"></i></div>
+                        <span class="text-xs mt-1">猫砂盆</span>
+                    </div>
+                    <div class="flex flex-col items-center min-w-[60px]">
+                        <div class="w-12 h-12 rounded-full bg-purple-50 flex items-center justify-center"><i class="fas fa-video text-purple-400 text-xl"></i></div>
+                        <span class="text-xs mt-1">摄像头</span>
+                    </div>
+                    <div class="flex flex-col items-center min-w-[60px]">
+                        <div class="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center"><i class="fas fa-temperature-high text-orange-400 text-xl"></i></div>
+                        <span class="text-xs mt-1">温湿度计</span>
+                    </div>
+                    <div class="flex flex-col items-center min-w-[60px]">
+                        <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center"><i class="fas fa-plus text-gray-400"></i></div>
+                        <span class="text-xs mt-1">添加</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 联动状态栏 -->
+            <div class="glass-card rounded-2xl p-3 mb-16 bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20 flex items-center gap-2">
+                <i class="fas fa-link text-primary"></i>
+                <span class="text-sm text-gray-700">分布式联动已激活 · 今日运动奖励已触发1次</span>
+                <i class="fas fa-check-circle text-success ml-auto"></i>
+            </div>
+        </div>
+        
+        <!-- 底部 Tab Bar -->
+        <div class="absolute bottom-0 left-0 right-0 h-20 bg-white/90 backdrop-blur-xl border-t border-gray-200/50 flex items-center justify-around px-4 rounded-b-[48px]">
+            <div class="flex flex-col items-center text-primary tab-item" onclick="switchTab(0)" style="cursor:pointer">
+                <i class="fas fa-home text-2xl"></i>
+                <span class="text-xs font-medium">首页</span>
+            </div>
+            <div class="flex flex-col items-center text-gray-400 tab-item" onclick="switchTab(INDEX)" style="cursor:pointer">
+                <i class="fas fa-microchip text-2xl"></i>
+                <span class="text-xs">设备</span>
+            </div>
+            <div class="flex flex-col items-center text-gray-400 tab-item" onclick="switchTab(INDEX)" style="cursor:pointer">
+                <i class="fas fa-heart-pulse text-2xl"></i>
+                <span class="text-xs">健康</span>
+            </div>
+            <div class="flex flex-col items-center text-gray-400 tab-item" onclick="switchTab(INDEX)" style="cursor:pointer">
+                <i class="fas fa-user text-2xl"></i>
+                <span class="text-xs">我的</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+

@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PetHub - 分布式智能养宠平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .phone-frame { width: 393px; height: 852px; background: #000; border-radius: 55px; padding: 12px; box-shadow: 0 25px 80px rgba(0,0,0,0.5), inset 0 0 0 2px #333; position: relative; }
+        .phone-frame::before { content: ''; position: absolute; top: 12px; left: 50%; transform: translateX(-50%); width: 120px; height: 30px; background: #000; border-radius: 0 0 15px 15px; z-index: 100; }
+        .phone-screen { width: 100%; height: 100%; background: #f5f7fa; border-radius: 44px; overflow: hidden; position: relative; }
+        .status-bar { height: 50px; background: transparent; display: flex; justify-content: space-between; align-items: flex-end; padding: 0 28px 8px; color: white; font-size: 14px; font-weight: 600; position: absolute; top: 0; left: 0; right: 0; z-index: 50; }
+        .header-bg { background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%); padding: 60px 20px 25px; border-radius: 0 0 30px 30px; }
+        .content-scroll { height: calc(100% - 80px); overflow-y: auto; padding-bottom: 20px; }
+        .content-scroll::-webkit-scrollbar { width: 0; }
+        .card { background: white; border-radius: 20px; padding: 18px; margin: 0 16px 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
+        .tab-bar { position: absolute; bottom: 0; left: 0; right: 0; height: 80px; background: white; display: flex; justify-content: space-around; align-items: center; padding-bottom: 15px; border-radius: 0 0 44px 44px; box-shadow: 0 -4px 20px rgba(0,0,0,0.05); }
+        .tab-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #9ca3af; font-size: 10px; cursor: pointer; transition: all 0.3s; }
+        .tab-item.active { color: #6366f1; }
+        .device-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+        .dot-online { background: #22c55e; box-shadow: 0 0 6px rgba(34,197,94,0.5); }
+        .linkage-flow { display: flex; align-items: center; gap: 8px; padding: 12px; background: linear-gradient(135deg, #fef3c7, #fde68a); border-radius: 12px; }
+        .flow-arrow { color: #f59e0b; font-size: 16px; animation: flowMove 1.5s infinite; }
+        @keyframes flowMove { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(4px); } }
+        .action-btn { border: none; padding: 10px 20px; border-radius: 20px; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+        .action-btn:active { transform: scale(0.95); }
+    </style>
+</head>
+<body>
+<div class="phone-frame">
+<div class="phone-screen">
+    <!-- Status Bar -->
+    <div class="status-bar">
+        <span>9:41</span>
+        <span style="display:flex;gap:6px;align-items:center;"><i class="fas fa-signal" style="font-size:12px"></i><i class="fas fa-wifi" style="font-size:12px"></i><i class="fas fa-battery-full" style="font-size:12px"></i></span>
+    </div>
+
+    <div class="content-scroll">
+    <!-- Header -->
+    <div class="header-bg">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <img src="https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=120&h=120&fit=crop&crop=face" style="width:50px;height:50px;border-radius:50%;border:3px solid rgba(255,255,255,0.4);object-fit:cover;">
+                <div style="color:white;">
+                    <div style="font-size:20px;font-weight:700;">Hi, 小柴</div>
+                    <div style="font-size:12px;opacity:0.85;display:flex;align-items:center;gap:6px;"><span class="device-dot dot-online"></span>所有设备在线</div>
+                </div>
+            </div>
+            <div style="display:flex;gap:15px;color:white;">
+                <i class="fas fa-plus-circle" style="font-size:22px;opacity:0.9;"></i>
+                <i class="fas fa-bell" style="font-size:22px;opacity:0.9;"></i>
+            </div>
+        </div>
+        <!-- Device Network Status -->
+        <div style="background:rgba(255,255,255,0.15);backdrop-filter:blur(10px);border-radius:16px;padding:14px 16px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;color:white;margin-bottom:10px;">
+                <span style="font-size:13px;font-weight:600;"><i class="fas fa-project-diagram" style="margin-right:6px;"></i>鸿蒙分布式组网</span>
+                <span style="font-size:11px;opacity:0.8;background:rgba(255,255,255,0.2);padding:3px 10px;border-radius:10px;">16台设备</span>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <span style="background:rgba(255,255,255,0.2);color:white;padding:4px 10px;border-radius:10px;font-size:11px;"><i class="fas fa-ring" style="margin-right:4px;"></i>项圈</span>
+                <span style="background:rgba(255,255,255,0.2);color:white;padding:4px 10px;border-radius:10px;font-size:11px;"><i class="fas fa-bowl-food" style="margin-right:4px;"></i>喂食器</span>
+                <span style="background:rgba(255,255,255,0.2);color:white;padding:4px 10px;border-radius:10px;font-size:11px;"><i class="fas fa-tint" style="margin-right:4px;"></i>饮水机</span>
+                <span style="background:rgba(255,255,255,0.2);color:white;padding:4px 10px;border-radius:10px;font-size:11px;"><i class="fas fa-video" style="margin-right:4px;"></i>摄像头</span>
+                <span style="background:rgba(255,255,255,0.2);color:white;padding:4px 10px;border-radius:10px;font-size:11px;"><i class="fas fa-ellipsis-h" style="margin-right:4px;"></i>+12</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Linkage Scene Card -->
+    <div class="card" style="margin-top:14px;border:2px solid #fbbf24;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+                <div style="width:32px;height:32px;background:linear-gradient(135deg,#f59e0b,#ef4444);border-radius:10px;display:flex;align-items:center;justify-content:center;color:white;font-size:14px;"><i class="fas fa-bolt"></i></div>
+                <div>
+                    <div style="font-size:14px;font-weight:700;color:#1f2937;">智能联动</div>
+                    <div style="font-size:11px;color:#6b7280;">运动量驱动自动投喂</div>
+                </div>
+            </div>
+            <span style="background:#dcfce7;color:#16a34a;padding:4px 10px;border-radius:10px;font-size:11px;font-weight:600;">运行中</span>
+        </div>
+        <div class="linkage-flow">
+            <div style="display:flex;align-items:center;gap:6px;">
+                <i class="fas fa-ring" style="color:#f59e0b;font-size:16px;"></i>
+                <span style="font-size:12px;font-weight:600;color:#92400e;">项圈检测</span>
+            </div>
+            <i class="fas fa-chevron-right flow-arrow"></i>
+            <div style="display:flex;align-items:center;gap:6px;">
+                <i class="fas fa-running" style="color:#f59e0b;font-size:16px;"></i>
+                <span style="font-size:12px;font-weight:600;color:#92400e;">运动达标</span>
+            </div>
+            <i class="fas fa-chevron-right flow-arrow"></i>
+            <div style="display:flex;align-items:center;gap:6px;">
+                <i class="fas fa-bowl-food" style="color:#f59e0b;font-size:16px;"></i>
+                <span style="font-size:12px;font-weight:600;color:#92400e;">自动投喂</span>
+            </div>
+        </div>
+        <div style="margin-top:10px;background:#fffbeb;border-radius:10px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:12px;color:#92400e;"><i class="fas fa-info-circle" style="margin-right:4px;"></i>今日已触发 2 次联动投喂</span>
+            <span style="font-size:11px;color:#d97706;font-weight:600;">查看详情 &gt;</span>
+        </div>
+    </div>
+
+    <!-- Smart Collar Card -->
+    <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+                <div style="width:32px;height:32px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:10px;display:flex;align-items:center;justify-content:center;color:white;font-size:14px;"><i class="fas fa-ring"></i></div>
+                <div style="font-size:15px;font-weight:700;color:#1f2937;">智能项圈</div>
+            </div>
+            <span style="font-size:11px;color:#6b7280;">电量 87%</span>
+        </div>
+        <!-- Location Mini Map -->
+        <div style="position:relative;height:120px;border-radius:14px;overflow:hidden;margin-bottom:14px;">
+            <img src="https://images.unsplash.com/photo-1569336415962-a4bd9f69cd83?w=400&h=150&fit=crop" style="width:100%;height:100%;object-fit:cover;">
+            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:white;padding:6px 12px;border-radius:15px;box-shadow:0 2px 10px rgba(0,0,0,0.2);font-size:12px;font-weight:600;display:flex;align-items:center;gap:5px;">
+                <i class="fas fa-paw" style="color:#6366f1;"></i>朝阳公园 - 草坪区
+            </div>
+            <div style="position:absolute;top:10px;right:10px;background:rgba(99,102,241,0.9);color:white;padding:4px 10px;border-radius:10px;font-size:11px;">实时</div>
+        </div>
+        <!-- Collar Quick Actions -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;">
+            <div style="text-align:center;padding:10px 5px;background:#f0f0ff;border-radius:12px;cursor:pointer;">
+                <i class="fas fa-map-marked-alt" style="font-size:18px;color:#6366f1;margin-bottom:4px;display:block;"></i>
+                <div style="font-size:10px;color:#4b5563;font-weight:500;">轨迹</div>
+            </div>
+            <div style="text-align:center;padding:10px 5px;background:#fef3f2;border-radius:12px;cursor:pointer;">
+                <i class="fas fa-microphone" style="font-size:18px;color:#ef4444;margin-bottom:4px;display:block;"></i>
+                <div style="font-size:10px;color:#4b5563;font-weight:500;">对话</div>
+            </div>
+            <div style="text-align:center;padding:10px 5px;background:#f0fdf4;border-radius:12px;cursor:pointer;">
+                <i class="fas fa-search-location" style="font-size:18px;color:#22c55e;margin-bottom:4px;display:block;"></i>
+                <div style="font-size:10px;color:#4b5563;font-weight:500;">寻宠</div>
+            </div>
+            <div style="text-align:center;padding:10px 5px;background:#fffbeb;border-radius:12px;cursor:pointer;">
+                <i class="fas fa-shield-alt" style="font-size:18px;color:#f59e0b;margin-bottom:4px;display:block;"></i>
+                <div style="font-size:10px;color:#4b5563;font-weight:500;">围栏</div>
+            </div>
+        </div>
+        <!-- Activity Stats -->
+        <div style="display:flex;gap:10px;">
+            <div style="flex:1;background:#f8fafc;border-radius:14px;padding:12px;text-align:center;">
+                <div style="font-size:22px;font-weight:800;color:#6366f1;">8,642</div>
+                <div style="font-size:11px;color:#6b7280;margin-top:2px;">步数</div>
+            </div>
+            <div style="flex:1;background:#f8fafc;border-radius:14px;padding:12px;text-align:center;">
+                <div style="font-size:22px;font-weight:800;color:#8b5cf6;">5.8km</div>
+                <div style="font-size:11px;color:#6b7280;margin-top:2px;">里程</div>
+            </div>
+            <div style="flex:1;background:#f8fafc;border-radius:14px;padding:12px;text-align:center;">
+                <div style="font-size:22px;font-weight:800;color:#ec4899;">386</div>
+                <div style="font-size:11px;color:#6b7280;margin-top:2px;">卡路里</div>
+            </div>
+        </div>
+        <div style="margin-top:12px;background:#f0f0ff;border-radius:10px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;">
+            <div style="display:flex;align-items:center;gap:6px;">
+                <i class="fas fa-trophy" style="color:#f59e0b;"></i>
+                <span style="font-size:12px;color:#4b5563;">运动目标完成</span>
+            </div>
+            <span style="font-size:14px;font-weight:700;color:#6366f1;">86%</span>
+        </div>
+    </div>
+
+    <!-- Smart Feeder Card -->
+    <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+                <div style="width:32px;height:32px;background:linear-gradient(135deg,#f97316,#ef4444);border-radius:10px;display:flex;align-items:center;justify-content:center;color:white;font-size:14px;"><i class="fas fa-bowl-food"></i></div>
+                <div style="font-size:15px;font-weight:700;color:#1f2937;">智能喂食器</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;">
+                <span class="device-dot dot-online"></span>
+                <span style="font-size:11px;color:#22c55e;font-weight:500;">在线</span>
+            </div>
+        </div>
+        <!-- Feeder Status -->
+        <div style="display:flex;gap:10px;margin-bottom:14px;">
+            <div style="flex:1;background:linear-gradient(135deg,#fff7ed,#ffedd5);border-radius:14px;padding:14px;text-align:center;">
+                <div style="position:relative;width:50px;height:50px;margin:0 auto 8px;">
+                    <svg width="50" height="50"><circle cx="25" cy="25" r="20" fill="none" stroke="#fed7aa" stroke-width="5"/><circle cx="25" cy="25" r="20" fill="none" stroke="#f97316" stroke-width="5" stroke-dasharray="125.6" stroke-dashoffset="43.96" stroke-linecap="round"/></svg>
+                    <span style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:11px;font-weight:700;color:#ea580c;">65%</span>
+                </div>
+                <div style="font-size:11px;color:#9a3412;font-weight:500;">余粮</div>
+            </div>
+            <div style="flex:1;background:linear-gradient(135deg,#f5f3ff,#ede9fe);border-radius:14px;padding:14px;text-align:center;">
+                <div style="font-size:28px;font-weight:800;color:#7c3aed;margin-bottom:4px;">4</div>
+                <div style="font-size:11px;color:#6d28d9;font-weight:500;">今日投喂</div>
+                <div style="font-size:10px;color:#8b5cf6;margin-top:3px;">上次 15:30</div>
+            </div>
+            <div style="flex:1;background:linear-gradient(135deg,#ecfdf5,#d1fae5);border-radius:14px;padding:14px;text-align:center;">
+                <div style="font-size:28px;font-weight:800;color:#059669;margin-bottom:4px;">180g</div>
+                <div style="font-size:11px;color:#047857;font-weight:500;">今日食量</div>
+                <div style="font-size:10px;color:#10b981;margin-top:3px;">推荐220g</div>
+            </div>
+        </div>
+        <!-- Feeding Schedule -->
+        <div style="background:#f8fafc;border-radius:14px;padding:12px;margin-bottom:14px;">
+            <div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:10px;"><i class="fas fa-clock" style="color:#6366f1;margin-right:6px;"></i>喂食计划</div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:white;border-radius:10px;">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <span style="background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:6px;font-size:10px;">已完成</span>
+                        <span style="font-size:12px;font-weight:600;">08:00</span>
+                    </div>
+                    <span style="font-size:12px;color:#6b7280;">50g - 定时</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:white;border-radius:10px;">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <span style="background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:6px;font-size:10px;">已完成</span>
+                        <span style="font-size:12px;font-weight:600;">12:00</span>
+                    </div>
+                    <span style="font-size:12px;color:#6b7280;">60g - 定时</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:white;border-radius:10px;">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <span style="background:#fef3c7;color:#d97706;padding:2px 8px;border-radius:6px;font-size:10px;">联动</span>
+                        <span style="font-size:12px;font-weight:600;">15:30</span>
+                    </div>
+                    <span style="font-size:12px;color:#6b7280;">30g - 运动奖励</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:white;border-radius:10px;border:1px dashed #d1d5db;">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <span style="background:#e0e7ff;color:#4f46e5;padding:2px 8px;border-radius:6px;font-size:10px;">待执行</span>
+                        <span style="font-size:12px;font-weight:600;">18:00</span>
+                    </div>
+                    <span style="font-size:12px;color:#6b7280;">55g - 定时</span>
+                </div>
+            </div>
+        </div>
+        <!-- Feeder Actions -->
+        <div style="display:flex;gap:8px;">
+            <button class="action-btn" style="flex:1;background:linear-gradient(135deg,#f97316,#ef4444);color:white;box-shadow:0 4px 12px rgba(249,115,22,0.3);">
+                <i class="fas fa-bolt" style="margin-right:5px;"></i>立即加餐
+            </button>
+            <button class="action-btn" style="flex:1;background:#f3f4f6;color:#374151;">
+                <i class="fas fa-sliders-h" style="margin-right:5px;"></i>自定义食量
+            </button>
+        </div>
+    </div>
+
+    <!-- More Devices Grid -->
+    <div style="margin:0 16px 14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <span style="font-size:15px;font-weight:700;color:#1f2937;">更多设备</span>
+            <span style="font-size:12px;color:#6366f1;font-weight:500;">全部 16 台 &gt;</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+            <div style="background:white;padding:14px 8px;border-radius:16px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+                <i class="fas fa-tint" style="font-size:22px;color:#3b82f6;margin-bottom:6px;display:block;"></i>
+                <div style="font-size:10px;color:#4b5563;font-weight:500;">饮水机</div>
+                <div class="device-dot dot-online" style="margin:4px auto 0;"></div>
+            </div>
+            <div style="background:white;padding:14px 8px;border-radius:16px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+                <i class="fas fa-video" style="font-size:22px;color:#8b5cf6;margin-bottom:6px;display:block;"></i>
+                <div style="font-size:10px;color:#4b5563;font-weight:500;">摄像头</div>
+                <div class="device-dot dot-online" style="margin:4px auto 0;"></div>
+            </div>
+            <div style="background:white;padding:14px 8px;border-radius:16px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+                <i class="fas fa-fan" style="font-size:22px;color:#06b6d4;margin-bottom:6px;display:block;"></i>
+                <div style="font-size:10px;color:#4b5563;font-weight:500;">空气净化</div>
+                <div class="device-dot dot-online" style="margin:4px auto 0;"></div>
+            </div>
+            <div style="background:white;padding:14px 8px;border-radius:16px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+                <i class="fas fa-gamepad" style="font-size:22px;color:#ec4899;margin-bottom:6px;display:block;"></i>
+                <div style="font-size:10px;color:#4b5563;font-weight:500;">智能玩具</div>
+                <div class="device-dot dot-online" style="margin:4px auto 0;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Spacer for tab bar -->
+    <div style="height:90px;"></div>
+    </div>
+
+    <!-- Bottom Tab Bar -->
+    <div class="tab-bar">
+        <div class="tab-item active">
+            <i class="fas fa-home" style="font-size:22px;"></i>
+            <span>首页</span>
+        </div>
+        <div class="tab-item">
+            <i class="fas fa-project-diagram" style="font-size:22px;"></i>
+            <span>设备</span>
+        </div>
+        <div class="tab-item">
+            <i class="fas fa-bolt" style="font-size:22px;"></i>
+            <span>联动</span>
+        </div>
+        <div class="tab-item">
+            <i class="fas fa-chart-bar" style="font-size:22px;"></i>
+            <span>数据</span>
+        </div>
+        <div class="tab-item">
+            <i class="fas fa-user-circle" style="font-size:22px;"></i>
+            <span>我的</span>
+        </div>
+    </div>
+</div>
+</div>
+</body>
+</html>
