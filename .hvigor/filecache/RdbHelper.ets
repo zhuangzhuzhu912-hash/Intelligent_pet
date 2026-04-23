@@ -4,7 +4,6 @@
 import { relationalStore } from '@kit.ArkData';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { Context } from '@kit.AbilityKit';
-import type { LocationPoint, HardwareTelemetry, FeedingScheduleItem } from '../models/DataModels';
 
 const TAG: string = 'RdbHelper';
 const DOMAIN: number = 0x0000;
@@ -300,7 +299,7 @@ class RdbHelperClass {
   }
 
   // 批量插入位置点
-  async batchInsertLocationPoints(points: LocationPoint[]): Promise<number[]> {
+  async batchInsertLocationPoints(points: any[]): Promise<number[]> {
     const store = await this.getStoreAsync();
     const rowIds: number[] = [];
 
@@ -323,7 +322,7 @@ class RdbHelperClass {
   }
 
   // 获取宠物当日轨迹
-  async getPetTrajectory(petId: number, date: string): Promise<LocationPoint[]> {
+  async getPetTrajectory(petId: number, date: string): Promise<any[]> {
     const store = await this.getStoreAsync();
     const predicates = new relationalStore.RdbPredicates('location_track');
     predicates.equalTo('pet_id', petId);
@@ -332,7 +331,7 @@ class RdbHelperClass {
     predicates.orderByAsc('timestamp');
 
     const resultSet = await store.query(predicates);
-    const points: LocationPoint[] = [];
+    const points: any[] = [];
 
     while (resultSet.goToNextRow()) {
       points.push({
@@ -348,7 +347,7 @@ class RdbHelperClass {
   }
 
   // 获取设备最新遥测数据
-  async getLatestTelemetry(deviceId: string, metricType?: string): Promise<HardwareTelemetry[]> {
+  async getLatestTelemetry(deviceId: string, metricType?: string): Promise<any[]> {
     const store = await this.getStoreAsync();
     const predicates = new relationalStore.RdbPredicates('hardware_telemetry');
     predicates.equalTo('device_id', deviceId);
@@ -358,15 +357,13 @@ class RdbHelperClass {
     }
 
     predicates.orderByDesc('timestamp');
-    predicates.limitAs(10); // 获取最近10条
+    predicates.limit(10); // 获取最近10条
 
     const resultSet = await store.query(predicates);
-    const telemetry: HardwareTelemetry[] = [];
+    const telemetry: any[] = [];
 
     while (resultSet.goToNextRow()) {
       telemetry.push({
-        deviceId: deviceId,
-        deviceType: resultSet.getString(resultSet.getColumnIndex('device_type')) || 'unknown',
         metricType: resultSet.getString(resultSet.getColumnIndex('metric_type')),
         value: resultSet.getDouble(resultSet.getColumnIndex('value')),
         unit: resultSet.getString(resultSet.getColumnIndex('unit')),
@@ -379,7 +376,7 @@ class RdbHelperClass {
   }
 
   // 获取激活的喂食计划
-  async getActiveFeedingSchedules(petId: number): Promise<FeedingScheduleItem[]> {
+  async getActiveFeedingSchedules(petId: number): Promise<any[]> {
     const store = await this.getStoreAsync();
     const predicates = new relationalStore.RdbPredicates('feeding_schedule');
     predicates.equalTo('pet_id', petId);
@@ -387,20 +384,16 @@ class RdbHelperClass {
     predicates.orderByAsc('time');
 
     const resultSet = await store.query(predicates);
-    const schedules: FeedingScheduleItem[] = [];
+    const schedules: any[] = [];
 
     while (resultSet.goToNextRow()) {
       schedules.push({
         id: resultSet.getLong(resultSet.getColumnIndex('id')),
-        petId: petId,
         time: resultSet.getString(resultSet.getColumnIndex('time')),
         label: resultSet.getString(resultSet.getColumnIndex('label')),
         amount: resultSet.getDouble(resultSet.getColumnIndex('amount')),
         unit: resultSet.getString(resultSet.getColumnIndex('unit')),
-        isActive: true,
         isAdaptive: resultSet.getLong(resultSet.getColumnIndex('is_adaptive')) === 1,
-        minAmount: resultSet.getDouble(resultSet.getColumnIndex('min_amount')) || 20,
-        maxAmount: resultSet.getDouble(resultSet.getColumnIndex('max_amount')) || 50,
         daysOfWeek: JSON.parse(resultSet.getString(resultSet.getColumnIndex('days_of_week')) || '[0,1,2,3,4,5,6]')
       });
     }

@@ -1,10 +1,11 @@
 {
   "name": "entry",
   "version": "1.0.0",
-  "description": "Please describe the basic information.",
+  "description": "Intelligent Pet App - Distributed pet care with smart collar and feeder",
   "main": "",
   "author": "",
   "license": "",
-  "dependencies": {}
+  "dependencies": {
+  }
 }
 

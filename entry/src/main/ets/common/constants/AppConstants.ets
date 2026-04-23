@@ -18,6 +18,10 @@ export class AppColors {
   static readonly SUCCESS_10: string = '#EDFCE5';
   static readonly WARNING_10: string = '#FFF8E6';
   static readonly DANGER_10: string = '#FFF1F0';
+  // 别名（兼容不同页面引用）
+  static readonly BACKGROUND: string = '#F8F9FA';
+  static readonly ERROR: string = '#FF4D4F';
+  static readonly ERROR_10: string = '#FFF1F0';
 }
 
 // 应用尺寸

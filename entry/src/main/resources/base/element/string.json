@@ -31,6 +31,22 @@
     {
       "name": "permission_distributed_reason",
       "value": "用于鸿蒙分布式设备协同和软总线组网"
+    },
+    {
+      "name": "permission_bluetooth_reason",
+      "value": "用于连接智能项圈和喂食器等蓝牙设备"
+    },
+    {
+      "name": "permission_wifi_reason",
+      "value": "用于连接Wi-Fi网络和设备通信"
+    },
+    {
+      "name": "permission_sensor_reason",
+      "value": "用于读取运动传感器数据监测宠物活动"
+    },
+    {
+      "name": "permission_motion_reason",
+      "value": "用于监测宠物运动状态和步数统计"
     }
   ]
 }

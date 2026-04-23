@@ -97,8 +97,32 @@
         }
       },
       {
-        "name": "ohos.permission.USE_BLUETOOTH",
+        "name": "ohos.permission.ACCESS_BLUETOOTH",
         "reason": "$string:permission_bluetooth_reason",
+        "usedScene": {
+          "abilities": ["EntryAbility"],
+          "when": "inuse"
+        }
+      },
+      {
+        "name": "ohos.permission.DISCOVER_BLUETOOTH",
+        "reason": "$string:permission_bluetooth_reason",
+        "usedScene": {
+          "abilities": ["EntryAbility"],
+          "when": "inuse"
+        }
+      },
+      {
+        "name": "ohos.permission.MANAGE_BLUETOOTH",
+        "reason": "$string:permission_bluetooth_reason",
+        "usedScene": {
+          "abilities": ["EntryAbility"],
+          "when": "inuse"
+        }
+      },
+      {
+        "name": "ohos.permission.ACCESS_WIFI_STATE",
+        "reason": "$string:permission_wifi_reason",
         "usedScene": {
           "abilities": ["EntryAbility"],
           "when": "inuse"
@@ -113,7 +137,7 @@
         }
       },
       {
-        "name": "ohos.permission.ACCELEROMETER",
+        "name": "ohos.permission.ACCESS_SENSOR",
         "reason": "$string:permission_sensor_reason",
         "usedScene": {
           "abilities": ["EntryAbility"],

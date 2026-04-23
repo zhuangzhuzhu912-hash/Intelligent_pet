@@ -8,6 +8,8 @@ import { MotionService } from '../services/MotionService';
 import { FeedService } from '../services/FeedService';
 import type { FeedEntity } from '../services/FeedService';
 import { DeviceDiscoveryService } from '../services/DeviceDiscoveryService';
+import { CollarHardwareService } from '../services/CollarHardwareService';
+import { FeederHardwareService } from '../services/FeederHardwareService';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const TAG: string = 'HomePage';
@@ -41,6 +43,12 @@ export struct HomePage {
     nextMealTime: '--:--', isAdaptiveEnabled: false
   };
 
+  // 硬件控制状态
+  @State private isFindingPet: boolean = false;
+  @State private isAudioTalking: boolean = false;
+  @State private collarDevices: any[] = [];
+  @State private feederDevices: any[] = [];
+
   @State private feedingPlans: FeedingPlan[] = [
     { time: '08:00', label: '早餐', amount: 30, unit: 'g', status: FeedingStatus.PENDING },
     { time: '12:30', label: '午餐', amount: 25, unit: 'g', status: FeedingStatus.PENDING },
@@ -51,6 +59,7 @@ export struct HomePage {
 
   aboutToAppear(): void {
     this.loadPetData();
+    this.loadHardwareDevices();
   }
 
   private async loadPetData(): Promise<void> {
@@ -90,6 +99,81 @@ export struct HomePage {
       this.deviceCount = DeviceDiscoveryService.getDeviceCount();
     } catch (err) {
       hilog.error(0x0000, TAG, `Load pet data failed: ${JSON.stringify(err)}`);
+    }
+  }
+
+  private loadHardwareDevices(): void {
+    try {
+      // 获取智能项圈设备
+      this.collarDevices = DeviceDiscoveryService.getCollarDevices();
+      // 获取智能喂食器设备
+      this.feederDevices = DeviceDiscoveryService.getFeederDevices();
+
+      // 更新项圈在线状态
+      this.isCollarOnline = this.collarDevices.length > 0;
+
+      hilog.info(0x0000, TAG, `Found ${this.collarDevices.length} collar devices and ${this.feederDevices.length} feeder devices`);
+    } catch (err) {
+      hilog.error(0x0000, TAG, `Load hardware devices failed: ${JSON.stringify(err)}`);
+    }
+  }
+
+  // 一键寻宠功能
+  private async handleFindPet(): Promise<void> {
+    if (this.collarDevices.length === 0) {
+      hilog.warn(0x0000, TAG, 'No collar devices available for find pet');
+      return;
+    }
+
+    this.isFindingPet = true;
+    try {
+      // 发送寻宠命令
+      await CollarHardwareService.findPet();
+      hilog.info(0x0000, TAG, 'Find pet command sent');
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : JSON.stringify(err);
+      hilog.error(0x0000, TAG, `Find pet failed: ${errorMsg}`);
+    } finally {
+      this.isFindingPet = false;
+    }
+  }
+
+  // 语音对讲功能
+  private async handleAudioTalk(): Promise<void> {
+    if (this.collarDevices.length === 0) {
+      hilog.warn(0x0000, TAG, 'No collar devices available for audio talk');
+      return;
+    }
+
+    this.isAudioTalking = true;
+    try {
+      // 开始语音对讲
+      const deviceId = this.collarDevices[0].deviceId;
+      await CollarHardwareService.startAudioTalk(deviceId);
+      hilog.info(0x0000, TAG, `Audio talk started with device ${deviceId}`);
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : JSON.stringify(err);
+      hilog.error(0x0000, TAG, `Audio talk failed: ${errorMsg}`);
+    } finally {
+      this.isAudioTalking = false;
+    }
+  }
+
+  // 手动投喂功能
+  private async handleManualFeedWithHardware(): Promise<void> {
+    if (this.feederDevices.length === 0) {
+      hilog.warn(0x0000, TAG, 'No feeder devices available for manual feed');
+      return;
+    }
+
+    try {
+      // 发送投喂命令到第一个喂食器设备
+      const deviceId = this.feederDevices[0].deviceId;
+      await FeederHardwareService.feed(30); // 默认30克
+      hilog.info(0x0000, TAG, `Manual feed command sent to device ${deviceId}`);
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : JSON.stringify(err);
+      hilog.error(0x0000, TAG, `Manual feed failed: ${errorMsg}`);
     }
   }
 
@@ -192,8 +276,30 @@ export struct HomePage {
         }.width('100%').alignItems(HorizontalAlign.Start)
 
         Grid() {
-          GridItem() { this.buildActionBtn($r('sys.media.ohos_ic_public_search_filled'), '一键寻宠', AppColors.PRIMARY_10, AppColors.PRIMARY) }
-          GridItem() { this.buildActionBtn($r('sys.media.ohos_ic_public_voice'), '语音对讲', AppColors.SECONDARY_10, AppColors.SECONDARY) }
+          GridItem() {
+            Column({ space: 4 }) {
+              Image($r('sys.media.ohos_ic_public_search_filled')).width(20).height(20).fillColor(AppColors.PRIMARY)
+              Text('一键寻宠').fontSize(11).fontColor(AppColors.TEXT_PRIMARY)
+            }
+            .width('100%').height('100%')
+            .justifyContent(FlexAlign.Center)
+            .backgroundColor(AppColors.PRIMARY_10).borderRadius(12)
+            .onClick(() => {
+              this.handleFindPet();
+            })
+          }
+          GridItem() {
+            Column({ space: 4 }) {
+              Image($r('sys.media.ohos_ic_public_voice')).width(20).height(20).fillColor(AppColors.SECONDARY)
+              Text('语音对讲').fontSize(11).fontColor(AppColors.TEXT_PRIMARY)
+            }
+            .width('100%').height('100%')
+            .justifyContent(FlexAlign.Center)
+            .backgroundColor(AppColors.SECONDARY_10).borderRadius(12)
+            .onClick(() => {
+              this.handleAudioTalk();
+            })
+          }
           GridItem() { this.buildActionBtn($r('app.media.ohos_ic_public_gps'), '历史轨迹', '#F3F4F6', AppColors.TEXT_SECONDARY) }
           GridItem() { this.buildActionBtn($r('app.media.ohos_ic_public_shield'), '电子围栏', '#F3F4F6', AppColors.TEXT_SECONDARY) }
         }
@@ -304,7 +410,7 @@ export struct HomePage {
             .fontColor(Color.White).backgroundColor(AppColors.PRIMARY)
             .borderRadius(AppSizes.BTN_RADIUS).height(44).layoutWeight(1)
             .shadow({ radius: 8, color: 'rgba(255,159,67,0.25)', offsetY: 2 })
-            .onClick(() => { this.handleManualFeed(); })
+            .onClick(() => { this.handleManualFeedWithHardware(); })
           Button('自定义投喂').fontSize(AppFonts.BODY).fontWeight(FontWeight.Medium)
             .fontColor(AppColors.TEXT_PRIMARY).backgroundColor(Color.White)
             .borderRadius(AppSizes.BTN_RADIUS).borderWidth(1).borderColor(AppColors.BORDER)

@@ -177,3 +177,131 @@ export interface DailyFeedSummary {
   totalAmount: number;
   feedCount: number;
 }
+
+// ===== 硬件相关扩展接口 =====
+
+// 位置点数据
+export interface LocationPoint {
+  latitude: number;
+  longitude: number;
+  timestamp: string;
+  accuracy: number;
+  altitude?: number;
+  speed?: number;
+}
+
+// 运动轨迹
+export interface Trajectory {
+  date: string;
+  points: LocationPoint[];
+  totalDistance: number;
+  duration: number; // 秒
+}
+
+// 硬件命令类型
+export enum HardwareCommandType {
+  FIND_PET = 'find_pet',           // 一键寻宠
+  VOICE_CALL = 'voice_call',       // 语音对讲
+  GET_STATUS = 'get_status',       // 获取状态
+  FEED_NOW = 'feed_now',           // 立即投喂
+  SET_SCHEDULE = 'set_schedule',   // 设置计划
+  CALIBRATE = 'calibrate'          // 校准
+}
+
+// 硬件命令
+export interface HardwareCommand {
+  type: HardwareCommandType;
+  deviceId: string;
+  timestamp: string;
+  payload?: Record<string, any>;
+}
+
+// 硬件状态
+export interface HardwareStatus {
+  deviceId: string;
+  deviceType: DeviceType;
+  battery: number;
+  signalStrength: number;
+  lastSeen: string;
+  hardwareVersion: string;
+  temperature?: number;
+  errors?: string[];
+}
+
+// 项圈硬件状态
+export interface CollarHardwareStatus extends HardwareStatus {
+  steps: number;
+  distance: number;
+  calories: number;
+  isMoving: boolean;
+  lastLocation?: LocationPoint;
+}
+
+// 喂食器硬件状态
+export interface FeederHardwareStatus extends HardwareStatus {
+  foodRemaining: number;
+  foodCapacity: number;
+  waterRemaining: number;
+  waterCapacity: number;
+  servoPosition: number;
+  weightSensorValue: number;
+  lastFeedTime: string;
+  feedCountToday: number;
+}
+
+// 传感器数据
+export interface SensorData {
+  timestamp: string;
+  accelerometer: {
+    x: number;
+    y: number;
+    z: number;
+  };
+  steps: number;
+  distance: number;
+  calories: number;
+}
+
+// 喂食计划项
+export interface FeedingScheduleItem {
+  id?: number;
+  petId: number;
+  time: string;           // HH:mm格式
+  label: string;
+  amount: number;
+  unit: string;
+  isActive: boolean;
+  isAdaptive: boolean;    // 是否启用自适应
+  minAmount: number;      // 最小投喂量
+  maxAmount: number;      // 最大投喂量
+  daysOfWeek: number[];   // 0-6表示周日到周六
+}
+
+// 自适应投喂规则
+export interface AdaptiveFeedingRule {
+  stepsThreshold: number;      // 步数阈值
+  amountAdjustment: number;    // 投喂量调整（百分比）
+  isReward: boolean;           // 是否为奖励零食
+}
+
+// 位置围栏
+export interface GeoFence {
+  id?: number;
+  petId: number;
+  name: string;
+  latitude: number;
+  longitude: number;
+  radius: number;        // 米
+  isActive: boolean;
+  notificationEnabled: boolean;
+}
+
+// 硬件遥测数据
+export interface HardwareTelemetry {
+  deviceId: string;
+  deviceType: string;
+  metricType: string;
+  value: number;
+  unit: string;
+  timestamp: string;
+}
