@@ -3,6 +3,7 @@
 
 import { distributedDeviceManager } from '@kit.DistributedServiceKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
+import { DeviceService } from './DeviceService';
 
 const TAG: string = 'DeviceDiscoveryService';
 const DOMAIN: number = 0x0000;
@@ -73,6 +74,8 @@ class DeviceDiscoveryServiceClass {
   private deviceManager: distributedDeviceManager.DeviceManager | null = null;
   private trustedDevices: DiscoveredDevice[] = [];
   private callbacks: DeviceChangeCallback[] = [];
+  private readonly builtInDeviceCount: number = 3;
+  private readonly builtInLinkageCount: number = 1;
 
   // 初始化设备管理器
   init(): void {
@@ -130,9 +133,23 @@ class DeviceDiscoveryServiceClass {
     return [...this.trustedDevices];
   }
 
-  // 获取设备数量
+  // 获取设备数量（仅软总线发现设备）
   getDeviceCount(): number {
     return this.trustedDevices.length;
+  }
+
+  // 获取设备总数（数据库设备 + 软总线发现设备）
+  async getTotalDeviceCount(): Promise<number> {
+    const dbCount = await DeviceService.getDeviceCount();
+    return dbCount + this.trustedDevices.length;
+  }
+
+  // 获取联动场景数量（数据库中的可联动设备 + 发现的可联动设备）
+  async getLinkageSceneCount(): Promise<number> {
+    const dbDevices = await DeviceService.getDevicesByCurrentUser();
+    const linkageTypes = ['collar', 'feeder', 'water'];
+    const dbLinkageCount = dbDevices.filter((d) => linkageTypes.includes(d.type)).length;
+    return dbLinkageCount + this.getFeederDevices().length;
   }
 
   // 注册设备变更回调

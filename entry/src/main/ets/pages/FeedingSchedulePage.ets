@@ -15,7 +15,7 @@ const DAYS_OF_WEEK: string[] = ['日', '一', '二', '三', '四', '五', '六']
 
 @Component
 export struct FeedingSchedulePage {
-  @StorageProp('currentPetId') currentPetId: number = -1;
+  @StorageProp('currentPetId') @Watch('onPetChanged') currentPetId: number = -1;
   @StorageProp('isLoggedIn') isLoggedIn: boolean = false;
 
   @State private schedules: FeedingScheduleItem[] = [];
@@ -33,6 +33,13 @@ export struct FeedingSchedulePage {
 
   aboutToAppear(): void {
     if (this.isLoggedIn && this.currentPetId > 0) {
+      this.loadData();
+    }
+  }
+
+  // 当 currentPetId 变化时重新加载喂食计划
+  onPetChanged(): void {
+    if (this.currentPetId > 0) {
       this.loadData();
     }
   }

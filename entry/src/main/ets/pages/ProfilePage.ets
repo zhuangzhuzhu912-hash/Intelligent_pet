@@ -16,12 +16,17 @@ export struct ProfilePage {
   @StorageProp('currentNickname') currentNickname: string = '';
   @StorageProp('currentUsername') currentUsername: string = '';
   @StorageProp('currentUserId') currentUserId: number = -1;
-  @StorageProp('currentPetId') currentPetId: number = -1;
+  @StorageProp('currentPetId') @Watch('onPetChanged') currentPetId: number = -1;
+  @StorageProp('profileRefreshKey') @Watch('onTabRefresh') profileRefreshKey: number = 0;
 
   @State private petCount: number = 0;
   @State private deviceCount: number = 0;
+  @State private usageDays: number = 0;
+  @State private linkageScenes: number = 0;
   @State private pets: PetEntity[] = [];
+  @State private currentPet: PetEntity | null = null;
   @State private showPetSwitcher: boolean = false;
+  private isLoadingData: boolean = false;
 
   private menuGroup1: Array<[string, string, string]> = [
     ['🐾', AppColors.PRIMARY, '我的宠物'],
@@ -40,22 +45,75 @@ export struct ProfilePage {
     this.loadData();
   }
 
+  // 从宠物管理页返回时刷新列表与当前宠物状态
+  onPageShow(): void {
+    this.loadData();
+  }
+
+  // 当 currentPetId 变化时重新加载（宠物切换触发）
+  onPetChanged(): void {
+    if (this.currentPetId > 0) {
+      this.loadData();
+    }
+  }
+
+  // 当切换到"我的"tab 时刷新数据
+  onTabRefresh(): void {
+    this.loadData();
+  }
+
   private async loadData(): Promise<void> {
-    if (!this.isLoggedIn) {
+    if (!this.isLoggedIn || this.isLoadingData) {
       return;
     }
+    this.isLoadingData = true;
+    try {
+      // 加载宠物列表
     try {
       this.pets = await PetService.getPetsByCurrentUser();
       this.petCount = this.pets.length;
-      this.deviceCount = DeviceDiscoveryService.getDeviceCount();
     } catch (err) {
-      hilog.error(0x0000, TAG, `Load data failed: ${JSON.stringify(err)}`);
+      hilog.error(0x0000, TAG, `Load pets failed: ${JSON.stringify(err)}`);
+    }
+    // 若无选中宠物，默认选中第一只
+    if (this.currentPetId <= 0 && this.pets.length > 0) {
+      PetService.setCurrentPet(this.pets[0].id);
+    }
+    // 同步当前宠物对象（用于 UI 直接渲染，避免 ForEach filter 不可靠）
+    this.currentPet = this.pets.find((p: PetEntity) => p.id === this.currentPetId) ?? null;
+    // 加载设备数量
+    try {
+      this.deviceCount = await DeviceDiscoveryService.getTotalDeviceCount();
+      this.linkageScenes = await DeviceDiscoveryService.getLinkageSceneCount();
+    } catch (err) {
+      hilog.error(0x0000, TAG, `Load device stats failed: ${JSON.stringify(err)}`);
+    }
+    // 加载使用天数
+    try {
+      this.usageDays = await UserService.getUsageDays();
+    } catch (err) {
+      hilog.error(0x0000, TAG, `Load usage days failed: ${JSON.stringify(err)}`);
+    }
+    } finally {
+      this.isLoadingData = false;
     }
   }
 
   private handleMenuClick(label: string): void {
     if (label === '我的宠物') {
       router.pushUrl({ url: 'pages/PetManagePage' });
+    } else if (label === '设备管理') {
+      AppStorage.setOrCreate<number>('switchTab', 1);
+    } else if (label === '联动场景') {
+      router.pushUrl({ url: 'pages/LinkageScenePage' });
+    } else if (label === '消息通知') {
+      router.pushUrl({ url: 'pages/NotificationsPage' });
+    } else if (label === '隐私设置') {
+      router.pushUrl({ url: 'pages/PrivacySettingsPage' });
+    } else if (label === '帮助中心') {
+      router.pushUrl({ url: 'pages/HelpCenterPage' });
+    } else if (label === '关于我们') {
+      router.pushUrl({ url: 'pages/AboutPage' });
     }
   }
 
@@ -66,6 +124,7 @@ export struct ProfilePage {
 
   private handleSwitchPet(petId: number): void {
     PetService.setCurrentPet(petId);
+    this.currentPet = this.pets.find((p: PetEntity) => p.id === petId) ?? null;
     this.showPetSwitcher = false;
   }
 
@@ -109,12 +168,14 @@ export struct ProfilePage {
             .fontWeight(FontWeight.Bold)
             .fontColor(AppColors.TEXT_PRIMARY)
           Blank()
-          Text(this.showPetSwitcher ? '收起' : '切换')
-            .fontSize(AppFonts.CAPTION)
-            .fontColor(AppColors.PRIMARY)
-            .onClick(() => {
-              this.showPetSwitcher = !this.showPetSwitcher;
-            })
+          if (this.pets.length > 1) {
+            Text(this.showPetSwitcher ? '收起' : '切换')
+              .fontSize(AppFonts.CAPTION)
+              .fontColor(AppColors.PRIMARY)
+              .onClick(() => {
+                this.showPetSwitcher = !this.showPetSwitcher;
+              })
+          }
         }
         .width('100%')
 
@@ -126,30 +187,28 @@ export struct ProfilePage {
             .onClick(() => {
               router.pushUrl({ url: 'pages/PetManagePage' });
             })
-        } else {
+        } else if (this.currentPet) {
           // 当前宠物信息
-          ForEach(this.pets.filter((p: PetEntity) => p.id === this.currentPetId), (pet: PetEntity) => {
-            Row({ space: 12 }) {
-              Text('🐾')
-                .fontSize(24)
-                .width(44)
-                .height(44)
-                .textAlign(TextAlign.Center)
-                .backgroundColor(AppColors.PRIMARY_10)
-                .borderRadius(22)
-              Column({ space: 2 }) {
-                Text(pet.name)
-                  .fontSize(AppFonts.BODY)
-                  .fontWeight(FontWeight.Bold)
-                  .fontColor(AppColors.TEXT_PRIMARY)
-                Text(`${pet.breed || '未知品种'} · ${pet.age > 0 ? pet.age + '岁' : ''} · ${pet.gender}`)
-                  .fontSize(AppFonts.CAPTION)
-                  .fontColor(AppColors.TEXT_SECONDARY)
-              }
-              .alignItems(HorizontalAlign.Start)
+          Row({ space: 12 }) {
+            Text('🐾')
+              .fontSize(24)
+              .width(44)
+              .height(44)
+              .textAlign(TextAlign.Center)
+              .backgroundColor(AppColors.PRIMARY_10)
+              .borderRadius(22)
+            Column({ space: 2 }) {
+              Text(this.currentPet!.name)
+                .fontSize(AppFonts.BODY)
+                .fontWeight(FontWeight.Bold)
+                .fontColor(AppColors.TEXT_PRIMARY)
+              Text(`${this.currentPet!.breed || '未知品种'} · ${this.currentPet!.age > 0 ? this.currentPet!.age + '岁' : ''} · ${this.currentPet!.gender}`)
+                .fontSize(AppFonts.CAPTION)
+                .fontColor(AppColors.TEXT_SECONDARY)
             }
-            .width('100%')
-          })
+            .alignItems(HorizontalAlign.Start)
+          }
+          .width('100%')
 
           // 宠物切换列表
           if (this.showPetSwitcher && this.pets.length > 1) {
@@ -203,11 +262,11 @@ export struct ProfilePage {
         }
 
         GridItem() {
-          this.buildStatItem('--', '使用天数')
+          this.buildStatItem(this.usageDays.toString(), '使用天数')
         }
 
         GridItem() {
-          this.buildStatItem('--', '联动场景')
+          this.buildStatItem(this.linkageScenes.toString(), '联动场景')
         }
       }
       .columnsTemplate('1fr 1fr 1fr 1fr')

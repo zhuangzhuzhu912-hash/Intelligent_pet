@@ -13,7 +13,7 @@ const TAG: string = 'HealthPage';
 
 @Component
 export struct HealthPage {
-  @StorageProp('currentPetId') currentPetId: number = -1;
+  @StorageProp('currentPetId') @Watch('onPetChanged') currentPetId: number = -1;
   @StorageProp('isLoggedIn') isLoggedIn: boolean = false;
 
   @State private petName: string = '--';
@@ -41,6 +41,13 @@ export struct HealthPage {
 
   aboutToAppear(): void {
     this.loadData();
+  }
+
+  // 当 currentPetId 变化时重新加载健康数据
+  onPetChanged(): void {
+    if (this.currentPetId > 0) {
+      this.loadData();
+    }
   }
 
   private async loadData(): Promise<void> {

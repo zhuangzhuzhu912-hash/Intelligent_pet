@@ -16,7 +16,7 @@ const TAG: string = 'HomePage';
 
 @Component
 export struct HomePage {
-  @StorageProp('currentPetId') currentPetId: number = -1;
+  @StorageProp('currentPetId') @Watch('onPetChanged') currentPetId: number = -1;
   @StorageProp('isLoggedIn') isLoggedIn: boolean = false;
 
   @State private petName: string = '--';
@@ -62,20 +62,37 @@ export struct HomePage {
     this.loadHardwareDevices();
   }
 
+  // 当 currentPetId 变化时重新加载宠物数据
+  onPetChanged(): void {
+    if (this.currentPetId > 0) {
+      this.loadPetData();
+    }
+  }
+
   private async loadPetData(): Promise<void> {
-    if (!this.isLoggedIn || this.currentPetId <= 0) {
+    if (!this.isLoggedIn) {
       return;
+    }
+    let petId = this.currentPetId;
+    if (petId <= 0) {
+      const pets = await PetService.getPetsByCurrentUser();
+      if (pets.length > 0) {
+        petId = pets[0].id;
+        PetService.setCurrentPet(petId);
+      } else {
+        return;
+      }
     }
     try {
       // 加载宠物信息
-      const pet: PetEntity | null = await PetService.getPetById(this.currentPetId);
+      const pet: PetEntity | null = await PetService.getPetById(petId);
       if (pet) {
         this.petName = pet.name;
         this.petBreed = `${pet.breed || '未知'}·${pet.age > 0 ? pet.age + '岁' : ''}`;
         this.petWeight = `${pet.weight > 0 ? pet.weight + 'kg' : '--'} · ${pet.gender} · ${pet.vaccineStatus === 'done' ? '疫苗齐全' : '疫苗待补'}`;
       }
       // 加载运动数据
-      const motion = await MotionService.getTodayRecord(this.currentPetId);
+      const motion = await MotionService.getTodayRecord(petId);
       if (motion) {
         this.activity = {
           steps: motion.steps,
@@ -87,7 +104,7 @@ export struct HomePage {
         };
       }
       // 加载喂食记录
-      const feeds: FeedEntity[] = await FeedService.getTodayRecords(this.currentPetId);
+      const feeds: FeedEntity[] = await FeedService.getTodayRecords(petId);
       this.feedingRecords = feeds.map((f: FeedEntity): FeedingRecord => ({
         time: f.feedTime.split('T').length > 1 ? f.feedTime.split('T')[1].substring(0, 5) : f.feedTime,
         type: f.feedType as FeedingRecordType,

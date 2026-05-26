@@ -13,7 +13,7 @@ const TAG: string = 'MapPage';
 
 @Component
 export struct MapPage {
-  @StorageProp('currentPetId') currentPetId: number = -1;
+  @StorageProp('currentPetId') @Watch('onPetChanged') currentPetId: number = -1;
   @StorageProp('isLoggedIn') isLoggedIn: boolean = false;
 
   @State private currentLocation: LocationPoint | null = null;
@@ -26,6 +26,14 @@ export struct MapPage {
 
   aboutToAppear(): void {
     if (this.isLoggedIn && this.currentPetId > 0) {
+      this.initializeMap();
+    }
+  }
+
+  // 当 currentPetId 变化时重新初始化地图
+  onPetChanged(): void {
+    if (this.currentPetId > 0) {
+      this.mapLoaded = false;
       this.initializeMap();
     }
   }

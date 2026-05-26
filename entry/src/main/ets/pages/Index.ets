@@ -5,6 +5,7 @@ import { DevicesPage } from './DevicesPage';
 import { HealthPage } from './HealthPage';
 import { ProfilePage } from './ProfilePage';
 import { UserService } from '../services/UserService';
+import { PetService } from '../services/PetService';
 import { router } from '@kit.ArkUI';
 
 interface TabItem {
@@ -18,6 +19,7 @@ interface TabItem {
 struct Index {
   @State private currentIndex: number = 0;
   @StorageProp('isLoggedIn') isLoggedIn: boolean = false;
+  @StorageLink('switchTab') @Watch('onSwitchTab') switchTab: number = -1;
 
   private tabItems: TabItem[] = [
     { label: '首页', icon: $r('app.media.ohos_ic_public_home'), iconSelected: $r('app.media.ohos_ic_public_home_filled') },
@@ -43,9 +45,35 @@ struct Index {
     if (!AppStorage.has('currentPetId')) {
       AppStorage.setOrCreate<number>('currentPetId', -1);
     }
+    if (!AppStorage.has('profileRefreshKey')) {
+      AppStorage.setOrCreate<number>('profileRefreshKey', 0);
+    }
+    if (!AppStorage.has('switchTab')) {
+      AppStorage.setOrCreate<number>('switchTab', -1);
+    }
     // 登录态检查
     if (!UserService.isLoggedIn()) {
       router.replaceUrl({ url: 'pages/LoginPage' });
+      return;
+    }
+    // 若无选中宠物，默认选中第一只
+    this.initDefaultPet();
+  }
+
+  private async initDefaultPet(): Promise<void> {
+    if ((AppStorage.get<number>('currentPetId') ?? -1) <= 0) {
+      const pets = await PetService.getPetsByCurrentUser();
+      if (pets.length > 0) {
+        PetService.setCurrentPet(pets[0].id);
+      }
+    }
+  }
+
+  // 响应从其他页面发起的 tab 切换请求
+  onSwitchTab(): void {
+    if (this.switchTab >= 0 && this.switchTab <= 3) {
+      this.currentIndex = this.switchTab;
+      this.switchTab = -1;
     }
   }
 
@@ -92,6 +120,9 @@ struct Index {
     .barBackgroundColor(Color.White)
     .onChange((index: number) => {
       this.currentIndex = index;
+      if (index === 3) {
+        AppStorage.setOrCreate<number>('profileRefreshKey', Date.now());
+      }
     })
     .width('100%')
     .height('100%')

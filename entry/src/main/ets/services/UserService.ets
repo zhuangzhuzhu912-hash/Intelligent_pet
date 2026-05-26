@@ -173,6 +173,22 @@ class UserServiceClass {
     return AppStorage.get<number>('currentUserId') ?? -1;
   }
 
+  // 获取已使用天数（自注册日起算）
+  async getUsageDays(): Promise<number> {
+    const userId = this.getCurrentUserId();
+    if (userId <= 0) {
+      return 0;
+    }
+    const user = await this.findById(userId);
+    if (!user || !user.createdAt) {
+      return 0;
+    }
+    const created = new Date(user.createdAt);
+    const now = new Date();
+    const diffMs = now.getTime() - created.getTime();
+    return Math.max(1, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
+  }
+
   // 是否已登录
   isLoggedIn(): boolean {
     return AppStorage.get<boolean>('isLoggedIn') ?? false;

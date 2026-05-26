@@ -1,1 +1,1 @@
-{"basePath":"D:\\Harmony_project\\pet_web-master\\pet_web-master\\.hvigor\\dependencyMap\\dependencyMap.json5","rootDependency":"./oh-package.json5","dependencyMap":{"entry":"./entry/oh-package.json5"},"modules":[{"name":"entry","srcPath":"..\\..\\..\\entry"}]}
+{"basePath":"D:\\Harmony_project\\pet_web-master\\pet_project\\.hvigor\\dependencyMap\\dependencyMap.json5","rootDependency":"./oh-package.json5","dependencyMap":{"entry":"./entry/oh-package.json5"},"modules":[{"name":"entry","srcPath":"..\\..\\..\\entry"}]}

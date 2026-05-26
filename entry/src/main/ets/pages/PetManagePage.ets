@@ -84,8 +84,8 @@ struct PetManagePage {
         await PetService.updatePet(this.editingPetId, petData);
       } else {
         const newId = await PetService.addPet(petData);
-        // 如果是第一只宠物，自动设为当前宠物
-        if (this.pets.length === 0) {
+        // 若当前无选中宠物，自动选中新添加的宠物
+        if (PetService.getCurrentPetId() <= 0) {
           PetService.setCurrentPet(newId);
         }
       }

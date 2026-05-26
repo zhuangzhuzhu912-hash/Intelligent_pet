@@ -150,6 +150,26 @@ CREATE TABLE IF NOT EXISTS adaptive_feeding_rule (
   updated_at TEXT NOT NULL
 )`;
 
+// 设备信息表
+const SQL_CREATE_DEVICE_INFO = `
+CREATE TABLE IF NOT EXISTS device_info (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+  name TEXT NOT NULL,
+  model TEXT NOT NULL,
+  type TEXT NOT NULL,
+  icon_symbol TEXT DEFAULT '📱',
+  icon_color TEXT DEFAULT '#FF9F43',
+  gradient_start TEXT DEFAULT '#FF9F43',
+  gradient_end TEXT DEFAULT '#F97316',
+  features TEXT DEFAULT '[]',
+  extra_info TEXT DEFAULT '',
+  is_builtin INTEGER DEFAULT 0,
+  is_online INTEGER DEFAULT 1,
+  battery INTEGER DEFAULT 100,
+  created_at TEXT NOT NULL
+)`;
+
 // 分布式表列表
 const DISTRIBUTED_TABLES: string[] = [
   'pet_info',
@@ -158,7 +178,8 @@ const DISTRIBUTED_TABLES: string[] = [
   'location_track',
   'hardware_telemetry',
   'feeding_schedule',
-  'geo_fence'
+  'geo_fence',
+  'device_info'
 ];
 
 class RdbHelperClass {
@@ -203,6 +224,7 @@ class RdbHelperClass {
       await this.rdbStore.executeSql(SQL_CREATE_FEEDING_SCHEDULE);
       await this.rdbStore.executeSql(SQL_CREATE_GEO_FENCE);
       await this.rdbStore.executeSql(SQL_CREATE_ADAPTIVE_RULE);
+      await this.rdbStore.executeSql(SQL_CREATE_DEVICE_INFO);
       hilog.info(DOMAIN, TAG, 'All tables created');
 
       // 设置分布式表

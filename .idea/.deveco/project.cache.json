@@ -9,7 +9,7 @@
 		"SELECT_BUILD_PRODUCT":"default",
 		"BUNDLE_NAME":"com.pethub.intelligent_pet",
 		"BUILD_PATH":{
-			"OUTPUT_PATH":"D:\\Harmony_project\\pet_web-master\\pet_web-master\\build\\outputs\\default"
+			"OUTPUT_PATH":"D:\\Harmony_project\\pet_web-master\\pet_project\\build\\outputs\\default"
 		},
 		"SELECT_BUILD_MODE":""
 	}
