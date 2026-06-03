@@ -3,15 +3,24 @@
 
 import { geoLocationManager } from '@kit.LocationKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
+import { relationalStore } from '@kit.ArkData';
 import { RdbHelper } from './RdbHelper';
 import type { LocationPoint } from '../models/DataModels';
 import type { LocationServiceStatus } from '../models/LocationModels';
+import type { BleGpsData } from '../models/BleModels';
 
 const TAG: string = 'LocationService';
 const DOMAIN: number = 0x0000;
 
-// 定位配置
-const LOCATION_CONFIG = {
+// 定位配置（显式类型声明，满足 arkts-no-untyped-obj-literals）
+interface LocationConfig {
+  priority: geoLocationManager.LocationRequestPriority;
+  scenario: geoLocationManager.LocationRequestScenario;
+  maxAccuracy: number;
+  timeInterval: number;
+  distanceInterval: number;
+}
+const LOCATION_CONFIG: LocationConfig = {
   priority: geoLocationManager.LocationRequestPriority.FIRST_FIX, // 首次定位优先
   scenario: geoLocationManager.LocationRequestScenario.NAVIGATION, // 导航场景
   maxAccuracy: 50, // 最大精度（米）
@@ -86,7 +95,8 @@ class LocationServiceClass {
       hilog.info(DOMAIN, TAG, 'Location tracking stopped');
     } catch (err) {
       hilog.error(DOMAIN, TAG, `Failed to stop location tracking: ${JSON.stringify(err)}`);
-      throw err;
+      const stopMsg = err instanceof Error ? err.message : JSON.stringify(err);
+      throw new Error(stopMsg);
     }
   }
 
@@ -99,7 +109,7 @@ class LocationServiceClass {
         accuracy: location.accuracy,
         altitude: location.altitude,
         speed: location.speed,
-        timestamp: new Date(location.time).toISOString(),
+        timestamp: new Date(Date.now()).toISOString(),
       };
 
       this.lastLocation = locationPoint;
@@ -126,7 +136,7 @@ class LocationServiceClass {
         return;
       }
 
-      const values = {
+      const values: relationalStore.ValuesBucket = {
         pet_id: this.currentPetId,
         user_id: userId,
         device_id: this.currentDeviceId,
@@ -167,7 +177,7 @@ class LocationServiceClass {
         accuracy: location.accuracy,
         altitude: location.altitude,
         speed: location.speed,
-        timestamp: new Date(location.time).toISOString(),
+        timestamp: new Date(Date.now()).toISOString(),
       };
 
       this.lastLocation = locationPoint;
@@ -189,8 +199,9 @@ class LocationServiceClass {
     try {
       return await RdbHelper.getPetTrajectory(petId, date);
     } catch (err) {
-      hilog.error(DOMAIN, TAG, `Failed to get pet trajectory: ${JSON.stringify(err)}`);
-      throw err;
+      const trajMsg = err instanceof Error ? err.message : JSON.stringify(err);
+      hilog.error(DOMAIN, TAG, `Failed to get pet trajectory: ${trajMsg}`);
+      throw new Error(trajMsg);
     }
   }
 
@@ -302,6 +313,38 @@ class LocationServiceClass {
       callbackCount: this.locationCallbacks.length,
       errorCallbackCount: this.errorCallbacks.length,
     };
+  }
+
+  // ==========================================================================
+  // BLE GPS 数据接收（由 BleDataBridge 调用）
+  // ==========================================================================
+
+  /**
+   * 接收来自 BLE 开发板的 GPS 定位数据
+   * @param gps 开发板 AT6558 上报的 GPS/北斗定位结果
+   */
+  receiveBleGpsLocation(gps: BleGpsData): void {
+    const locationPoint: LocationPoint = {
+      latitude: gps.lat,
+      longitude: gps.lon,
+      accuracy: gps.sats > 0 ? 10 : 50,  // 卫星数越多精度越高
+      altitude: gps.alt,
+      speed: 0,
+      timestamp: new Date().toISOString(),
+    };
+
+    this.lastLocation = locationPoint;
+
+    // 异步保存到数据库
+    this.saveLocationPoint(locationPoint).catch((err: Error) => {
+      hilog.error(DOMAIN, TAG, `Failed to save BLE GPS point: ${err.message}`);
+    });
+
+    // 通知 UI 回调
+    this.notifyLocationCallbacks(locationPoint);
+
+    hilog.debug(DOMAIN, TAG,
+      `BLE GPS: ${gps.lat.toFixed(6)}, ${gps.lon.toFixed(6)}, alt=${gps.alt}m, fix=${gps.fix}, sats=${gps.sats}`);
   }
 
   // 清除所有回调

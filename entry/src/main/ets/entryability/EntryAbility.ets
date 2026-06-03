@@ -3,6 +3,8 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { window } from '@kit.ArkUI';
 import { RdbHelper } from '../services/RdbHelper';
 import { DeviceDiscoveryService } from '../services/DeviceDiscoveryService';
+import { BleService } from '../services/BleService';
+import { BleDataBridge } from '../services/BleDataBridge';
 
 const TAG: string = 'PetHubAbility';
 const DOMAIN: number = 0x0000;
@@ -19,6 +21,7 @@ export default class EntryAbility extends UIAbility {
 
   onDestroy(): void {
     hilog.info(DOMAIN, TAG, 'onDestroy');
+    BleService.release();
     DeviceDiscoveryService.release();
   }
 
@@ -49,6 +52,15 @@ export default class EntryAbility extends UIAbility {
         hilog.info(DOMAIN, TAG, 'DeviceDiscoveryService initialized');
       } catch (err) {
         hilog.warn(DOMAIN, TAG, 'Failed to init DeviceDiscoveryService: %{public}s', JSON.stringify(err));
+      }
+
+      // 初始化 BLE 服务（非关键，失败不影响主流程）
+      try {
+        BleService.init();
+        BleDataBridge.bridge();
+        hilog.info(DOMAIN, TAG, 'BleService initialized');
+      } catch (err) {
+        hilog.warn(DOMAIN, TAG, 'Failed to init BleService: %{public}s', JSON.stringify(err));
       }
 
       // 数据库就绪后加载页面

@@ -1,11 +1,13 @@
 // 传感器服务
 // 处理加速度传感器数据，实现步数检测和运动监测
+// 支持三种数据源：真实手机传感器 / 模拟 / BLE 开发板
 
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { relationalStore } from '@kit.ArkData';
 import { RdbHelper } from './RdbHelper';
 import type { AccelerometerData, ActivityData, SensorData } from '../models/DataModels';
 import { AccelerationData, MotionRecord, SensorServiceStatus, StepDetectionParams } from '../models/SensorModels';
+import type { BleMotionData } from '../models/BleModels';
 
 // 模拟sensor常量（SensorKit在应用层不可直接使用）
 const SENSOR_MODE_REALTIME: number = 0;
@@ -30,8 +32,9 @@ class SensorServiceClass {
   private lastStepTime: number = 0;
   private accelerationBuffer: Array<AccelerationData> = [];
 
-  // 模拟数据（当真实传感器不可用时）
+  // 数据来源控制
   private useSimulation: boolean = false;
+  private useBleDataSource: boolean = false;
   private simulationInterval: number = 0;
   private lastSimulationTime: number = 0;
   private STEP_DETECTION_PARAMS: StepDetectionParams = {
@@ -42,7 +45,9 @@ class SensorServiceClass {
   };
 
   // 开始运动监测
-  async startMonitoring(petId: number, deviceId: string = '', useSimulation: boolean = false): Promise<void> {
+  // useBle=true 时跳过模拟/真实传感器，数据由 BleDataBridge 注入
+  async startMonitoring(petId: number, deviceId: string = '', useSimulation: boolean = false,
+    useBle: boolean = false): Promise<void> {
     if (this.isMonitoring) {
       hilog.warn(DOMAIN, TAG, 'Sensor monitoring already started');
       return;
@@ -51,8 +56,17 @@ class SensorServiceClass {
     this.currentPetId = petId;
     this.currentDeviceId = deviceId;
     this.useSimulation = useSimulation;
+    this.useBleDataSource = useBle;
 
     try {
+      // BLE 数据源模式：不启动物理传感器，等待 BleDataBridge 注入数据
+      if (useBle) {
+        this.isMonitoring = true;
+        this.resetCounters();
+        hilog.info(DOMAIN, TAG, `Sensor monitoring via BLE for pet ${petId}`);
+        return;
+      }
+
       if (useSimulation) {
         await this.startSimulation();
       } else {
@@ -435,6 +449,77 @@ class SensorServiceClass {
       lastStepTime: this.lastStepTime ? new Date(this.lastStepTime).toISOString() : null,
     };
   }
+
+  // ==========================================================================
+  // BLE 数据接收接口（由 BleDataBridge 调用）
+  // ==========================================================================
+
+  /**
+   * 接收来自 BLE 开发板的运动数据
+   * @param motion 开发板 MPU6050 上报的运动状态和卡路里
+   */
+  receiveBleMotionData(motion: BleMotionData): void {
+    if (!this.useBleDataSource || !this.isMonitoring) {
+      return;
+    }
+
+    // 更新卡路里（开发板的累计值）
+    if (motion.calories > this.calories) {
+      this.calories = motion.calories;
+    }
+
+    // 根据运动状态生成模拟的加速度数据，触发步数检测
+    if (motion.isMoving) {
+      const acceleration: AccelerationData = {
+        x: 0.5 + Math.random() * 2.0,
+        y: 0.5 + Math.random() * 1.5,
+        z: 9.8 + Math.random() * 1.0,
+        timestamp: Date.now(),
+      };
+      this.accelerationBuffer.push(acceleration);
+      if (this.accelerationBuffer.length > 100) {
+        this.accelerationBuffer.shift();
+      }
+
+      // 运动状态触发步数累计
+      this.stepCount++;
+      this.updateDistanceAndCalories(1);
+    }
+
+    hilog.debug(DOMAIN, TAG,
+      `BLE motion: isMoving=${motion.isMoving}, calories=${motion.calories.toFixed(2)}`);
+  }
+
+  /**
+   * 接收来自 BLE 开发板的遥测数据（温湿度等），写入数据库
+   * @param metricType 指标类型（如 "temperature"、"humidity"）
+   * @param value      数值
+   * @param unit       单位
+   */
+  receiveBleTelemetry(metricType: string, value: number, unit: string): void {
+    if (!this.currentDeviceId) {
+      return;
+    }
+
+    const timestamp = new Date().toISOString();
+
+    // 异步写入数据库，不阻塞 BLE 回调
+    RdbHelper.insert('hardware_telemetry', {
+      device_id: this.currentDeviceId,
+      device_type: 'collar',
+      metric_type: metricType,
+      value: value,
+      unit: unit,
+      timestamp: timestamp,
+      created_at: timestamp,
+    }).then(() => {
+      hilog.debug(DOMAIN, TAG, `Telemetry saved: ${metricType}=${value}${unit}`);
+    }).catch((err: Error) => {
+      hilog.error(DOMAIN, TAG, `Failed to save telemetry ${metricType}: ${err.message}`);
+    });
+  }
+
+
 }
 
 // 单例导出
