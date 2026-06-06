@@ -150,6 +150,42 @@ CREATE TABLE IF NOT EXISTS adaptive_feeding_rule (
   updated_at TEXT NOT NULL
 )`;
 
+// 体重记录表
+const SQL_CREATE_WEIGHT_RECORD = `
+CREATE TABLE IF NOT EXISTS weight_record (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  pet_id INTEGER NOT NULL,
+  user_id INTEGER NOT NULL,
+  weight REAL NOT NULL,
+  record_date TEXT NOT NULL,
+  created_at TEXT NOT NULL
+)`;
+
+// 疫苗记录表
+const SQL_CREATE_VACCINE_RECORD = `
+CREATE TABLE IF NOT EXISTS vaccine_record (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  pet_id INTEGER NOT NULL,
+  user_id INTEGER NOT NULL,
+  name TEXT NOT NULL,
+  record_date TEXT NOT NULL,
+  status TEXT DEFAULT 'pending',
+  created_at TEXT NOT NULL
+)`;
+
+// 就诊记录表
+const SQL_CREATE_MEDICAL_RECORD = `
+CREATE TABLE IF NOT EXISTS medical_record (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  pet_id INTEGER NOT NULL,
+  user_id INTEGER NOT NULL,
+  title TEXT NOT NULL,
+  record_date TEXT NOT NULL,
+  description TEXT DEFAULT '',
+  hospital TEXT DEFAULT '',
+  created_at TEXT NOT NULL
+)`;
+
 // 设备信息表
 const SQL_CREATE_DEVICE_INFO = `
 CREATE TABLE IF NOT EXISTS device_info (
@@ -179,6 +215,9 @@ const DISTRIBUTED_TABLES: string[] = [
   'hardware_telemetry',
   'feeding_schedule',
   'geo_fence',
+  'weight_record',
+  'vaccine_record',
+  'medical_record',
   'device_info'
 ];
 
@@ -224,6 +263,9 @@ class RdbHelperClass {
       await this.rdbStore.executeSql(SQL_CREATE_FEEDING_SCHEDULE);
       await this.rdbStore.executeSql(SQL_CREATE_GEO_FENCE);
       await this.rdbStore.executeSql(SQL_CREATE_ADAPTIVE_RULE);
+      await this.rdbStore.executeSql(SQL_CREATE_WEIGHT_RECORD);
+      await this.rdbStore.executeSql(SQL_CREATE_VACCINE_RECORD);
+      await this.rdbStore.executeSql(SQL_CREATE_MEDICAL_RECORD);
       await this.rdbStore.executeSql(SQL_CREATE_DEVICE_INFO);
       hilog.info(DOMAIN, TAG, 'All tables created');
 

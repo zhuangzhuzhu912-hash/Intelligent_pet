@@ -20,7 +20,6 @@ export interface PetEntity {
   weight: number;
   avatar: string;
   temperature: number;
-  heartRate: number;
   vaccineStatus: string;
   isNeutered: boolean;
   createdAt: string;
@@ -44,7 +43,6 @@ class PetServiceClass {
       weight: pet.weight || 0,
       avatar: pet.avatar || '',
       temperature: pet.temperature || 0,
-      heart_rate: pet.heartRate || 0,
       vaccine_status: pet.vaccineStatus || 'pending',
       is_neutered: pet.isNeutered ? 1 : 0,
       created_at: now,
@@ -124,9 +122,6 @@ class PetServiceClass {
     if (pet.temperature !== undefined) {
       values['temperature'] = pet.temperature;
     }
-    if (pet.heartRate !== undefined) {
-      values['heart_rate'] = pet.heartRate;
-    }
     if (pet.vaccineStatus !== undefined) {
       values['vaccine_status'] = pet.vaccineStatus;
     }
@@ -183,7 +178,6 @@ class PetServiceClass {
       weight: rs.getDouble(rs.getColumnIndex('weight')),
       avatar: rs.getString(rs.getColumnIndex('avatar')),
       temperature: rs.getDouble(rs.getColumnIndex('temperature')),
-      heartRate: rs.getLong(rs.getColumnIndex('heart_rate')),
       vaccineStatus: rs.getString(rs.getColumnIndex('vaccine_status')),
       isNeutered: rs.getLong(rs.getColumnIndex('is_neutered')) === 1,
       createdAt: rs.getString(rs.getColumnIndex('created_at')),

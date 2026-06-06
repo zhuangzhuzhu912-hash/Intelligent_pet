@@ -3,6 +3,7 @@ import { AppColors, AppSizes, AppFonts } from '../common/constants/AppConstants'
 import { GlassCard } from '../components/CommonComponents';
 import { PetService } from '../services/PetService';
 import type { PetEntity } from '../services/PetService';
+import { HealthService } from '../services/HealthService';
 import { router } from '@kit.ArkUI';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
@@ -61,7 +62,7 @@ struct PetManagePage {
     this.formBreed = pet.breed;
     this.formAge = pet.age > 0 ? pet.age.toString() : '';
     this.formGender = pet.gender;
-    this.formWeight = pet.weight > 0 ? pet.weight.toString() : '';
+    this.formWeight = pet.weight > 0 ? pet.weight.toFixed(1) : '';
     this.errorMsg = '';
     this.showForm = true;
   }
@@ -78,12 +79,20 @@ struct PetManagePage {
         breed: this.formBreed.trim(),
         age: this.formAge ? parseFloat(this.formAge) : 0,
         gender: this.formGender,
-        weight: this.formWeight ? parseFloat(this.formWeight) : 0
+        weight: this.formWeight ? Math.round(parseFloat(this.formWeight) * 10) / 10 : 0
       };
       if (this.editingPetId > 0) {
         await PetService.updatePet(this.editingPetId, petData);
+        // 同步写入体重历史表
+        if (petData.weight && petData.weight > 0) {
+          await HealthService.addWeightRecord(this.editingPetId, petData.weight);
+        }
       } else {
         const newId = await PetService.addPet(petData);
+        // 同步写入体重历史表
+        if (petData.weight && petData.weight > 0) {
+          await HealthService.addWeightRecord(newId, petData.weight);
+        }
         // 若当前无选中宠物，自动选中新添加的宠物
         if (PetService.getCurrentPetId() <= 0) {
           PetService.setCurrentPet(newId);
@@ -169,7 +178,7 @@ struct PetManagePage {
             .fontSize(AppFonts.CAPTION)
             .fontColor(AppColors.TEXT_SECONDARY)
           if (pet.weight > 0) {
-            Text(`体重: ${pet.weight}kg`)
+            Text(`体重: ${pet.weight.toFixed(1)}kg`)
               .fontSize(AppFonts.SMALL)
               .fontColor(AppColors.TEXT_HINT)
           }
@@ -280,15 +289,24 @@ struct PetManagePage {
           Text('体重(kg)')
             .fontSize(AppFonts.BODY)
             .fontColor(AppColors.TEXT_PRIMARY)
-          TextInput({ placeholder: 'kg', text: this.formWeight })
-            .type(InputType.Number)
+          TextInput({ placeholder: '如 18.5', text: this.formWeight })
+            .type(InputType.Normal)
             .height(44)
             .borderRadius(12)
             .backgroundColor('#F3F4F6')
             .padding({ left: 12, right: 12 })
             .fontSize(AppFonts.BODY)
             .onChange((v: string) => {
-              this.formWeight = v;
+              let cleaned = v.replace(/[^0-9.]/g, '');
+              const dotIdx = cleaned.indexOf('.');
+              if (dotIdx >= 0) {
+                cleaned = cleaned.substring(0, dotIdx + 1) + cleaned.substring(dotIdx + 1).replace(/\./g, '');
+              }
+              const parts = cleaned.split('.');
+              if (parts.length > 1 && parts[1].length > 1) {
+                cleaned = parts[0] + '.' + parts[1].substring(0, 1);
+              }
+              this.formWeight = cleaned;
             })
         }
         .layoutWeight(1)

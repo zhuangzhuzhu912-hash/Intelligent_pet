@@ -89,7 +89,7 @@ export struct HomePage {
       if (pet) {
         this.petName = pet.name;
         this.petBreed = `${pet.breed || '未知'}·${pet.age > 0 ? pet.age + '岁' : ''}`;
-        this.petWeight = `${pet.weight > 0 ? pet.weight + 'kg' : '--'} · ${pet.gender} · ${pet.vaccineStatus === 'done' ? '疫苗齐全' : '疫苗待补'}`;
+        this.petWeight = `${pet.weight > 0 ? pet.weight.toFixed(1) + 'kg' : '--'} · ${pet.gender} · ${pet.vaccineStatus === 'done' ? '疫苗齐全' : '疫苗待补'}`;
       }
       // 加载运动数据
       const motion = await MotionService.getTodayRecord(petId);

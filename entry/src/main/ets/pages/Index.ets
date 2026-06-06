@@ -51,6 +51,9 @@ struct Index {
     if (!AppStorage.has('switchTab')) {
       AppStorage.setOrCreate<number>('switchTab', -1);
     }
+    if (!AppStorage.has('healthRefreshKey')) {
+      AppStorage.setOrCreate<number>('healthRefreshKey', 0);
+    }
     // 登录态检查
     if (!UserService.isLoggedIn()) {
       router.replaceUrl({ url: 'pages/LoginPage' });
@@ -120,6 +123,9 @@ struct Index {
     .barBackgroundColor(Color.White)
     .onChange((index: number) => {
       this.currentIndex = index;
+      if (index === 2) {
+        AppStorage.setOrCreate<number>('healthRefreshKey', Date.now());
+      }
       if (index === 3) {
         AppStorage.setOrCreate<number>('profileRefreshKey', Date.now());
       }

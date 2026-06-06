@@ -108,11 +108,12 @@ export interface FeederStatus {
 export interface HealthData {
   weight: number;
   temperature: number;
-  heartRate: number;
 }
 
 // 疫苗记录
 export interface VaccineRecord {
+  id?: number;
+  petId?: number;
   name: string;
   date: string;
   status: VaccineStatus;
@@ -120,10 +121,20 @@ export interface VaccineRecord {
 
 // 就诊记录
 export interface MedicalRecord {
+  id?: number;
+  petId?: number;
   title: string;
   date: string;
   description: string;
   hospital: string;
+}
+
+// 体重记录
+export interface WeightRecord {
+  id?: number;
+  petId: number;
+  weight: number;
+  recordDate: string;
 }
 
 // 周运动趋势

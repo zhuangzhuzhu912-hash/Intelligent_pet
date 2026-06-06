@@ -74,7 +74,7 @@ struct AboutPage {
               Divider().color(AppColors.DIVIDER).margin({ left: 36 })
               this.buildFeatureRow('🗺️', '实时位置追踪', 'GPS + 运动轨迹记录，电子围栏安全预警')
               Divider().color(AppColors.DIVIDER).margin({ left: 36 })
-              this.buildFeatureRow('📊', '健康数据分析', '体重、体温、心率趋势，疫苗到期提醒')
+              this.buildFeatureRow('📊', '健康数据分析', '体重、体温趋势，疫苗到期提醒')
               Divider().color(AppColors.DIVIDER).margin({ left: 36 })
               this.buildFeatureRow('🔗', '分布式组网', '基于鸿蒙软总线实现多设备无感协同')
             }
